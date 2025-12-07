@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
-"""Module to slice a NumPy matrix in different ways."""
+"""Module to slice a NumPy matrix into specific submatrices."""
 
 
 import numpy as np
+
 
 matrix = np.array([[1, 2, 3, 4, 5, 6],
                    [7, 8, 9, 10, 11, 12],
                    [13, 14, 15, 16, 17, 18],
                    [19, 20, 21, 22, 23, 24]])
 
-# Middle two rows of the matrix
 mat1 = matrix[1:3, :]
-
-# Middle two columns of the matrix
 mat2 = matrix[:, 2:4]
-
-# Bottom-right, square, 3x3 matrix
 mat3 = matrix[1:, 3:]
 
 print("The middle two rows of the matrix are:\n{}".format(mat1))
