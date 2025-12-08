@@ -11,11 +11,11 @@ def frequency():
     student_grades = np.random.normal(68, 15, 50)
     plt.figure(figsize=(6.4, 4.8))
 
-    # Compute histogram counts and bins
+    # Compute histogram counts
     bins = np.arange(0, 110, 10)
     counts, edges = np.histogram(student_grades, bins=bins)
 
-    # Compute bin centers
+    # Centers of bins for bar alignment
     centers = 0.5 * (edges[:-1] + edges[1:])
 
     # Plot bars
@@ -28,5 +28,5 @@ def frequency():
     # Title
     plt.title("Project A")
 
-    # Show plot
+    # Display
     plt.show()
