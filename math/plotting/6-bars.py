@@ -11,29 +11,25 @@ def bars():
 
     people = ['Farrah', 'Fred', 'Felicia']
     x = np.arange(len(people))
-    width = 0.5
 
     apples = fruit[0]
     bananas = fruit[1]
     oranges = fruit[2]
     peaches = fruit[3]
 
-    plt.bar(x, apples, width, color='red', label='Apples')
-    plt.bar(x, bananas, width, bottom=apples,
+    plt.bar(x, apples, width=0.5, color='red', label='Apples')
+    plt.bar(x, bananas, width=0.5, bottom=apples,
             color='yellow', label='Bananas')
-    plt.bar(x, oranges, width, bottom=apples + bananas,
+    plt.bar(x, oranges, width=0.5, bottom=apples + bananas,
             color='#ff8000', label='Oranges')
-    plt.bar(x, peaches, width,
+    plt.bar(x, peaches, width=0.5,
             bottom=apples + bananas + oranges,
             color='#ffe5b4', label='Peaches')
 
     plt.xticks(x, people)
-    plt.xlim(-0.5, 2.5)
-
     plt.ylabel('Quantity of Fruit')
     plt.ylim(0, 80)
     plt.yticks(np.arange(0, 81, 10))
-
     plt.title('Number of Fruit per Person')
     plt.legend()
 
