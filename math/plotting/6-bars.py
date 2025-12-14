@@ -28,9 +28,12 @@ def bars():
             color='#ffe5b4', label='Peaches')
 
     plt.xticks(x, people)
+    plt.xlim(-0.5, 2.5)
+
     plt.ylabel('Quantity of Fruit')
     plt.ylim(0, 80)
     plt.yticks(np.arange(0, 81, 10))
+
     plt.title('Number of Fruit per Person')
     plt.legend()
 
