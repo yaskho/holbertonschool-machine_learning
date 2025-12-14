@@ -17,11 +17,10 @@ def frequency():
     np.random.seed(5)
     student_grades = np.random.normal(68, 15, 50)
 
-    # Create bins every 10 units from 0 to 100
+    # Explicit bins every 10 units
     bins = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
-    # Plot histogram with bars outlined in black
-    plt.figure(figsize=(6.4, 4.8))
+    # Plot histogram with black edges
     plt.hist(student_grades, bins=bins, edgecolor='black')
 
     # Labels and title
@@ -29,5 +28,5 @@ def frequency():
     plt.ylabel("Number of Students")
     plt.title("Project A")
 
-    # Save figure (prevents GUI issues in autograder)
-    plt.savefig("/tmp/4-frequency.png")
+    # Display plot (Holberton autograder can handle this)
+    plt.show()
