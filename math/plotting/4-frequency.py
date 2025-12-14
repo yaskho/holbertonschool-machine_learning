@@ -17,17 +17,20 @@ def frequency():
     np.random.seed(5)
     student_grades = np.random.normal(68, 15, 50)
 
-    # Explicit integer bins every 10 units from 0 to 100
-    bins = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    # Define bins every 10 units from 0 to 100
+    bins = np.arange(0, 101, 10)
 
-    # Plot histogram with black edges
+    # Compute histogram
+    counts, edges = np.histogram(student_grades, bins=bins)
+
+    # Plot bar graph
     plt.figure(figsize=(6.4, 4.8))
-    plt.hist(student_grades, bins=bins, edgecolor='black')
+    plt.bar(edges[:-1], counts, width=10, edgecolor='black', align='edge')
 
     # Labels and title
     plt.xlabel("Grades")
     plt.ylabel("Number of Students")
     plt.title("Project A")
 
-    # Show the plot (autograder captures the image)
+    # Show plot
     plt.show()
