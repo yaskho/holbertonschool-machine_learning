@@ -17,14 +17,14 @@ def bars():
     oranges = fruit[2]
     peaches = fruit[3]
 
-    plt.bar(x, apples, width=0.5, color='red', label='Apples')
+    plt.bar(x, apples, width=0.5, color='red', label='apples')
     plt.bar(x, bananas, width=0.5, bottom=apples,
-            color='yellow', label='Bananas')
+            color='yellow', label='bananas')
     plt.bar(x, oranges, width=0.5, bottom=apples + bananas,
-            color='#ff8000', label='Oranges')
+            color='#ff8000', label='oranges')
     plt.bar(x, peaches, width=0.5,
             bottom=apples + bananas + oranges,
-            color='#ffe5b4', label='Peaches')
+            color='#ffe5b4', label='peaches')
 
     plt.xticks(x, people)
     plt.ylabel('Quantity of Fruit')
