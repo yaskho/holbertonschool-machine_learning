@@ -18,13 +18,14 @@ def frequency():
     student_grades = np.random.normal(68, 15, 50)
     plt.figure(figsize=(6.4, 4.8))
 
-    # Plot histogram
-    plt.hist(student_grades, bins=range(0, 101, 10), edgecolor='black')
+    # Plot histogram with 10-unit bins (from 0 to 100)
+    bins = np.arange(0, 101, 10)
+    plt.hist(student_grades, bins=bins, edgecolor='black')
 
     # Labels and title
     plt.xlabel("Grades")
     plt.ylabel("Number of Students")
     plt.title("Project A")
 
-    # Show plot
+    # Display plot
     plt.show()
