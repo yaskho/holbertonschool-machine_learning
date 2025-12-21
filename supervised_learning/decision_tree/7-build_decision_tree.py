@@ -139,6 +139,21 @@ class Decision_Tree():
         self.split_criterion = split_criterion
         self.predict = None
 
+    def depth(self):
+        """Returns the maximum depth of the tree."""
+        return max(leaf.depth for leaf in self.get_leaves())
+
+    def count_nodes(self, only_leaves=False):
+        """Counts total nodes or leaves in the tree."""
+        if only_leaves:
+            return len(self.get_leaves())
+
+        def _count(node):
+            if node.is_leaf:
+                return 1
+            return 1 + _count(node.left_child) + _count(node.right_child)
+        return _count(self.root)
+
     def __str__(self):
         """String representation of the tree."""
         return self.root.__str__()
@@ -208,7 +223,6 @@ class Decision_Tree():
         """Recursively fits a node or transforms it into a leaf."""
         node.feature, node.threshold = self.split_criterion(node)
 
-        # Boolean masks for sub-populations
         feat_vals = self.explanatory[:, node.feature]
         left_population = np.logical_and(node.sub_population,
                                          feat_vals > node.threshold)
@@ -244,9 +258,8 @@ class Decision_Tree():
         """Creates a leaf child with the most frequent class value."""
         target_subset = self.target[sub_population]
         if target_subset.size == 0:
-            value = 0  # Default fallback
+            value = 0
         else:
-            # Most represented class
             value = np.bincount(target_subset).argmax()
 
         leaf_child = Leaf(value)
@@ -265,25 +278,3 @@ class Decision_Tree():
         """Calculates prediction accuracy."""
         return np.sum(np.equal(self.predict(test_explanatory),
                                test_target)) / test_target.size
-
-    def count_nodes(self, only_leaves=False):
-        """Counts total nodes or leaves in the tree."""
-        nodes = self.get_leaves() if only_leaves else self.root.get_leaves_below()
-        # This is a placeholder; usually requires a full tree traversal
-        # for total nodes. Here we count the leaves:
-        if only_leaves:
-            return len(self.get_leaves())
-
-        def count(n):
-            if n.is_leaf:
-                return 1
-            return 1 + count(n.left_child) + count(n.right_child)
-        return count(self.root)
-
-    def depth(self):
-        """Returns the maximum depth of the tree."""
-        def get_d(n):
-            if n.is_leaf:
-                return n.depth
-            return max(get_d(n.left_child), get_d(n.right_child))
-        return get_d(self.root)
