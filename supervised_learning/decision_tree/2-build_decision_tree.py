@@ -58,7 +58,7 @@ class Node:
         Add prefix formatting for the left child.
         """
         lines = text.split("\n")
-        new_text = "    +--->" + lines[0] + "\n"
+        new_text = "    +---> " + lines[0] + "\n"
         for line in lines[1:]:
             new_text += "    |      " + line + "\n"
         return new_text.rstrip("\n")
@@ -68,7 +68,7 @@ class Node:
         Add prefix formatting for the right child.
         """
         lines = text.split("\n")
-        new_text = "    +--->" + lines[0] + "\n"
+        new_text = "    +---> " + lines[0] + "\n"
         for line in lines[1:]:
             new_text += "           " + line + "\n"
         return new_text.rstrip("\n")
@@ -78,12 +78,18 @@ class Node:
         Return a string representation of the subtree rooted at this node.
         """
         if self.is_root:
-            text = f"root [feature={self.feature}, threshold={self.threshold}]"
+            text = (
+                f"root [feature={self.feature}, "
+                f"threshold={self.threshold}]"
+            )
         else:
-            text = f"-> node [feature={self.feature}, threshold={self.threshold}]"
+            text = (
+                f"node [feature={self.feature}, "
+                f"threshold={self.threshold}]"
+            )
 
-        left_str = self.left_child.__str__()
-        right_str = self.right_child.__str__()
+        left_str = str(self.left_child)
+        right_str = str(self.right_child)
 
         text += "\n" + self.left_child_add_prefix(left_str)
         text += "\n" + self.right_child_add_prefix(right_str)
@@ -121,7 +127,7 @@ class Leaf(Node):
         """
         Return string representation of a leaf.
         """
-        return f"-> leaf [value={self.value}]"
+        return f"leaf [value={self.value}]"
 
 
 class Decision_Tree:
@@ -165,4 +171,4 @@ class Decision_Tree:
         """
         Return string representation of the decision tree.
         """
-        return self.root.__str__()
+        return str(self.root)
