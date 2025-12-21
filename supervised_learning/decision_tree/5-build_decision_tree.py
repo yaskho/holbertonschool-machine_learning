@@ -87,17 +87,24 @@ class Node:
         """Computes the indicator function from the bounds."""
         def is_large_enough(x):
             """Returns True if individuals are > lower bounds."""
-            return np.all([np.greater(x[:, key], self.lower[key])
-                          for key in self.lower.keys()], axis=0)
+            return np.all(
+                [np.greater(x[:, key], self.lower[key])
+                 for key in self.lower.keys()],
+                axis=0
+            )
 
         def is_small_enough(x):
             """Returns True if individuals are <= upper bounds."""
-            return np.all([np.less_equal(x[:, key], self.upper[key])
-                          for key in self.upper.keys()], axis=0)
+            return np.all(
+                [np.less_equal(x[:, key], self.upper[key])
+                 for key in self.upper.keys()],
+                axis=0
+            )
 
-        self.indicator = lambda x: np.all(np.array([is_large_enough(x),
-                                                   is_small_enough(x)]),
-                                         axis=0)
+        self.indicator = lambda x: np.all(
+            np.array([is_large_enough(x), is_small_enough(x)]),
+            axis=0
+        )
 
 
 class Leaf(Node):
