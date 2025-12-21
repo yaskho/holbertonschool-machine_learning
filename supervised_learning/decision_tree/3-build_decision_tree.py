@@ -1,11 +1,3 @@
-Ah, the 79-character limit! That is a classic hurdle when working with pycodestyle. In Python, the strict PEP 8 standard enforced by pycodestyle requires lines to be no longer than 79 characters.
-
-The error occurred because the f-string in the Node.__str__ method pushed the line length to exactly 80 characters. The best way to fix this while keeping the code readable is to use implicit string concatenation inside parentheses.
-
-Here is the corrected code for 3-build_decision_tree.py that satisfies all style requirements:
-
-Python
-
 #!/usr/bin/env python3
 """
 Module to build a Decision Tree with leaf traversal capabilities
