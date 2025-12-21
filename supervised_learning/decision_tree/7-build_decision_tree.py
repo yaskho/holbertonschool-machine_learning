@@ -1,3 +1,10 @@
+That E128 error is a strict pycodestyle check regarding how continuation lines are indented after a parenthesis. It usually triggers when the code isn't aligned vertically with the opening bracket or doesn't use a standard hanging indent.
+
+I have refactored the update_indicator method (and a few other long lines) to use a cleaner, standard indentation style that satisfies the PEP 8 linter.
+
+Corrected 7-build_decision_tree.py
+Python
+
 #!/usr/bin/env python3
 """
 Module to build a Decision Tree with training (fit) capabilities.
@@ -86,16 +93,25 @@ class Node:
     def update_indicator(self):
         """Computes the indicator function from the bounds."""
         def is_large_enough(x):
-            return np.all([np.greater(x[:, key], self.lower[key])
-                          for key in self.lower.keys()], axis=0)
+            """Check if features are greater than lower bounds."""
+            return np.all(
+                [np.greater(x[:, key], self.lower[key])
+                 for key in self.lower.keys()],
+                axis=0
+            )
 
         def is_small_enough(x):
-            return np.all([np.less_equal(x[:, key], self.upper[key])
-                          for key in self.upper.keys()], axis=0)
+            """Check if features are less than or equal to upper bounds."""
+            return np.all(
+                [np.less_equal(x[:, key], self.upper[key])
+                 for key in self.upper.keys()],
+                axis=0
+            )
 
-        self.indicator = lambda x: np.all(np.array([is_large_enough(x),
-                                                   is_small_enough(x)]),
-                                         axis=0)
+        self.indicator = lambda x: np.all(
+            np.array([is_large_enough(x), is_small_enough(x)]),
+            axis=0
+        )
 
 
 class Leaf(Node):
@@ -145,9 +161,8 @@ class Decision_Tree():
 
     def count_nodes(self, only_leaves=False):
         """Counts total nodes or leaves in the tree."""
-        leaves = self.get_leaves()
         if only_leaves:
-            return len(leaves)
+            return len(self.get_leaves())
 
         def _count(node):
             if node.is_leaf:
@@ -186,6 +201,7 @@ class Decision_Tree():
         if self.split_criterion == "random":
             self.split_criterion = self.random_split_criterion
         else:
+            # Gini_split_criterion to be defined in next task
             self.split_criterion = self.Gini_split_criterion
         self.explanatory = explanatory
         self.target = target
@@ -225,31 +241,31 @@ class Decision_Tree():
         node.feature, node.threshold = self.split_criterion(node)
 
         feat_vals = self.explanatory[:, node.feature]
-        left_population = np.logical_and(node.sub_population,
-                                         feat_vals > node.threshold)
-        right_population = np.logical_and(node.sub_population,
-                                          feat_vals <= node.threshold)
+        left_pop = np.logical_and(node.sub_population,
+                                  feat_vals > node.threshold)
+        right_pop = np.logical_and(node.sub_population,
+                                   feat_vals <= node.threshold)
 
         def check_is_leaf(pop, depth):
             pop_size = np.sum(pop)
-            if pop_size == 0:
+            if pop_size == 0 or pop_size < self.min_pop:
                 return True
-            if pop_size < self.min_pop or depth >= self.max_depth:
+            if depth >= self.max_depth:
                 return True
             if np.unique(self.target[pop]).size == 1:
                 return True
             return False
 
-        if check_is_leaf(left_population, node.depth + 1):
-            node.left_child = self.get_leaf_child(node, left_population)
+        if check_is_leaf(left_pop, node.depth + 1):
+            node.left_child = self.get_leaf_child(node, left_pop)
         else:
-            node.left_child = self.get_node_child(node, left_population)
+            node.left_child = self.get_node_child(node, left_pop)
             self.fit_node(node.left_child)
 
-        if check_is_leaf(right_population, node.depth + 1):
-            node.right_child = self.get_leaf_child(node, right_population)
+        if check_is_leaf(right_pop, node.depth + 1):
+            node.right_child = self.get_leaf_child(node, right_pop)
         else:
-            node.right_child = self.get_node_child(node, right_population)
+            node.right_child = self.get_node_child(node, right_pop)
             self.fit_node(node.right_child)
 
     def get_leaf_child(self, node, sub_population):
