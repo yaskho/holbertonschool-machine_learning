@@ -86,16 +86,25 @@ class Node:
     def update_indicator(self):
         """Computes the indicator function from the bounds."""
         def is_large_enough(x):
-            return np.all([np.greater(x[:, key], self.lower[key])
-                          for key in self.lower.keys()], axis=0)
+            """Check if features are greater than lower bounds."""
+            return np.all(
+                [np.greater(x[:, key], self.lower[key])
+                 for key in self.lower.keys()],
+                axis=0
+            )
 
         def is_small_enough(x):
-            return np.all([np.less_equal(x[:, key], self.upper[key])
-                          for key in self.upper.keys()], axis=0)
+            """Check if features are less than or equal to upper bounds."""
+            return np.all(
+                [np.less_equal(x[:, key], self.upper[key])
+                 for key in self.upper.keys()],
+                axis=0
+            )
 
-        self.indicator = lambda x: np.all(np.array([is_large_enough(x),
-                                                   is_small_enough(x)]),
-                                         axis=0)
+        self.indicator = lambda x: np.all(
+            np.array([is_large_enough(x), is_small_enough(x)]),
+            axis=0
+        )
 
 
 class Leaf(Node):
@@ -235,33 +244,25 @@ class Decision_Tree():
 
         classes = np.unique(sub_target)
 
-        # 3D broadcasting: (n_individuals, n_thresholds, n_classes)
-        # 1. Indicator for individual's class: (n, 1, c)
-        class_indicator = sub_target[:, None, None] == classes[None, None, :]
-        # 2. Indicator for individual > threshold: (n, t, 1)
-        thresh_indicator = sub_explanatory[:, None, None] > thresholds[None, :, None]
+        # 3D broadcasting
+        cl_ind = sub_target[:, None, None] == classes[None, None, :]
+        th_ind = sub_explanatory[:, None, None] > thresholds[None, :, None]
 
-        # Combine to get Left population membership by class
-        Left_F = np.logical_and(class_indicator, thresh_indicator)
-        Right_F = np.logical_and(class_indicator, ~thresh_indicator)
+        Left_F = np.logical_and(cl_ind, th_ind)
+        Right_F = np.logical_and(cl_ind, ~th_ind)
 
-        # Count occurrences (Sum over individuals axis=0)
-        left_counts = np.sum(Left_F, axis=0)   # shape (t, c)
-        right_counts = np.sum(Right_F, axis=0)  # shape (t, c)
+        left_counts = np.sum(Left_F, axis=0)
+        right_counts = np.sum(Right_F, axis=0)
 
-        # Total individuals per child
-        n_left = np.sum(left_counts, axis=1)   # shape (t,)
-        n_right = np.sum(right_counts, axis=1) # shape (t,)
+        n_left = np.sum(left_counts, axis=1)
+        n_right = np.sum(right_counts, axis=1)
         n_total = n_left + n_right
 
-        # Gini = 1 - sum( (count/total)^2 )
-        # Using a mask to avoid division by zero
         with np.errstate(divide='ignore', invalid='ignore'):
-            gini_left = 1 - np.sum((left_counts / n_left[:, None])**2, axis=1)
-            gini_right = 1 - np.sum((right_counts / n_right[:, None])**2, axis=1)
+            gini_l = 1 - np.sum((left_counts / n_left[:, None])**2, axis=1)
+            gini_r = 1 - np.sum((right_counts / n_right[:, None])**2, axis=1)
 
-        # Weighted Average
-        gini_avg = (n_left * gini_left + n_right * gini_right) / n_total
+        gini_avg = (n_left * gini_l + n_right * gini_r) / n_total
 
         best_idx = np.argmin(gini_avg)
         return thresholds[best_idx], gini_avg[best_idx]
