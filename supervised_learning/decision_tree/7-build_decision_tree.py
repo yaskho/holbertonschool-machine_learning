@@ -145,8 +145,9 @@ class Decision_Tree():
 
     def count_nodes(self, only_leaves=False):
         """Counts total nodes or leaves in the tree."""
+        leaves = self.get_leaves()
         if only_leaves:
-            return len(self.get_leaves())
+            return len(leaves)
 
         def _count(node):
             if node.is_leaf:
@@ -195,11 +196,11 @@ class Decision_Tree():
 
         if verbose == 1:
             print(f"  Training finished.")
-            print(f"- Depth                     : {self.depth()}")
-            print(f"- Number of nodes           : {self.count_nodes()}")
-            print(f"- Number of leaves          : "
+            print(f"    - Depth                     : {self.depth()}")
+            print(f"    - Number of nodes           : {self.count_nodes()}")
+            print(f"    - Number of leaves          : "
                   f"{self.count_nodes(only_leaves=True)}")
-            print(f"- Accuracy on training data : "
+            print(f"    - Accuracy on training data : "
                   f"{self.accuracy(self.explanatory, self.target)}")
 
     def np_extrema(self, arr):
@@ -229,7 +230,6 @@ class Decision_Tree():
         right_population = np.logical_and(node.sub_population,
                                           feat_vals <= node.threshold)
 
-        # Check stopping criteria
         def check_is_leaf(pop, depth):
             pop_size = np.sum(pop)
             if pop_size == 0:
@@ -240,14 +240,12 @@ class Decision_Tree():
                 return True
             return False
 
-        # Left Child
         if check_is_leaf(left_population, node.depth + 1):
             node.left_child = self.get_leaf_child(node, left_population)
         else:
             node.left_child = self.get_node_child(node, left_population)
             self.fit_node(node.left_child)
 
-        # Right Child
         if check_is_leaf(right_population, node.depth + 1):
             node.right_child = self.get_leaf_child(node, right_population)
         else:
