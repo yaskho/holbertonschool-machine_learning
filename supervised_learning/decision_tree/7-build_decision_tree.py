@@ -1,10 +1,3 @@
-That E128 error is a strict pycodestyle check regarding how continuation lines are indented after a parenthesis. It usually triggers when the code isn't aligned vertically with the opening bracket or doesn't use a standard hanging indent.
-
-I have refactored the update_indicator method (and a few other long lines) to use a cleaner, standard indentation style that satisfies the PEP 8 linter.
-
-Corrected 7-build_decision_tree.py
-Python
-
 #!/usr/bin/env python3
 """
 Module to build a Decision Tree with training (fit) capabilities.
