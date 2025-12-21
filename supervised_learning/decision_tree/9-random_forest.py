@@ -23,15 +23,13 @@ class Random_Forest():
         """
         Predicts classes for the explanatory data by voting.
         """
-        # Generate predictions for each tree in the forest
-        # Each tree.predict(explanatory) returns a 1D array of shape (n_samples)
-        # We store them to get a 2D array of shape (n_trees, n_samples)
+        # Generate predictions for each tree in the forest.
+        # all_preds shape: (n_trees, n_samples)
         all_preds = np.array([p(explanatory) for p in self.numpy_preds])
 
-        # Calculate the mode (most frequent) prediction for each example
-        # We iterate through the columns (samples) and find the most common value
-        # scipy.stats.mode could be used, but we can do it with numpy
+        # Calculate the mode (most frequent) prediction for each example.
         def get_mode(column):
+            """Returns the most frequent value in a 1D array."""
             return np.bincount(column.astype(int)).argmax()
 
         # Apply mode calculation along the tree axis (axis 0)
@@ -48,7 +46,6 @@ class Random_Forest():
         accuracies = []
 
         for i in range(n_trees):
-            # Seed each tree differently to ensure diversity
             T = Decision_Tree(max_depth=self.max_depth,
                               min_pop=self.min_pop,
                               seed=self.seed + i)
