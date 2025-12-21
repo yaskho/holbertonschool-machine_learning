@@ -21,7 +21,7 @@ class Node:
         self.depth = depth
 
     def left_child_add_prefix(self, text):
-        """Adds prefix to the string representation of the left child"""
+        """Adds prefix for left child visualization"""
         lines = text.split("\n")
         new_text = "    +--" + lines[0] + "\n"
         for x in lines[1:]:
@@ -29,7 +29,7 @@ class Node:
         return (new_text)
 
     def right_child_add_prefix(self, text):
-        """Adds prefix to the string representation of the right child"""
+        """Adds prefix for right child visualization"""
         lines = text.split("\n")
         new_text = "    +--" + lines[0] + "\n"
         for x in lines[1:]:
@@ -37,11 +37,12 @@ class Node:
         return (new_text)
 
     def __str__(self):
-        """Returns the string representation of the node and its children"""
+        """String representation of the node"""
         if self.is_root:
             out = f"root [feature={self.feature}, threshold={self.threshold}]\n"
         else:
-            out = f"node [feature={self.feature}, threshold={self.threshold}]\n"
+            out = f"-> node [feature={self.feature}, \
+threshold={self.threshold}]\n"
 
         if self.left_child:
             out += self.left_child_add_prefix(self.left_child.__str__())
@@ -62,8 +63,8 @@ class Leaf(Node):
         self.depth = depth
 
     def __str__(self):
-        """Returns the string representation of the leaf"""
-        return f"-> leaf [value={self.value}]"
+        """String representation of the leaf"""
+        return (f"-> leaf [value={self.value}]")
 
 
 class Decision_Tree():
@@ -85,5 +86,5 @@ class Decision_Tree():
         self.predict = None
 
     def __str__(self):
-        """Returns the string representation of the entire tree"""
+        """String representation of the tree"""
         return self.root.__str__()
