@@ -3,7 +3,7 @@
 Converts a label vector into a one-hot encoded matrix.
 """
 
-import numpy as np
+import tensorflow.keras as K
 
 
 def one_hot(labels, classes=None):
@@ -11,17 +11,17 @@ def one_hot(labels, classes=None):
     One-hot encodes a label vector.
 
     Args:
-        labels (np.ndarray): vector of labels
+        labels (tf.Tensor or np.ndarray): vector of labels
         classes (int, optional): number of classes
 
     Returns:
-        np.ndarray: one-hot encoded matrix
+        tf.Tensor: one-hot encoded matrix
     """
-    labels = np.array(labels)
+    labels = K.backend.constant(labels)
 
     if classes is None:
-        classes = np.max(labels) + 1
+        classes = K.backend.max(labels) + 1
 
-    one_hot_matrix = np.eye(classes)[labels]
+    one_hot_matrix = K.backend.one_hot(labels, int(classes))
 
     return one_hot_matrix
