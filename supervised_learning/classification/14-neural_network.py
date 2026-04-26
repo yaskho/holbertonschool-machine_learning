@@ -81,7 +81,7 @@ class NeuralNetwork:
         return prediction, cost
 
     def gradient_descent(self, X, Y, A1, A2, alpha=0.05):
-        """One step of gradient descent"""
+        """Backpropagation step"""
 
         m = Y.shape[1]
 
@@ -93,21 +93,19 @@ class NeuralNetwork:
         dW1 = (1 / m) * np.matmul(dZ1, X.T)
         db1 = (1 / m) * np.sum(dZ1)
 
-        self.__W2 = self.__W2 - alpha * dW2
-        self.__b2 = self.__b2 - alpha * db2
-        self.__W1 = self.__W1 - alpha * dW1
-        self.__b1 = self.__b1 - alpha * db1
+        self.__W2 -= alpha * dW2
+        self.__b2 -= alpha * db2
+        self.__W1 -= alpha * dW1
+        self.__b1 -= alpha * db1
 
     def train(self, X, Y, iterations=5000, alpha=0.05):
-        """Train the neural network"""
+        """Train neural network"""
 
-        # Validate iterations
         if not isinstance(iterations, int):
             raise TypeError("iterations must be an integer")
         if iterations <= 0:
             raise ValueError("iterations must be a positive integer")
 
-        # Validate alpha
         if not isinstance(alpha, float):
             raise TypeError("alpha must be a float")
         if alpha <= 0:
