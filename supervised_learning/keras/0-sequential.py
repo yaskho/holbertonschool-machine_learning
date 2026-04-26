@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+"""
+Builds a Keras sequential model with L2 regularization and dropout.
+"""
+
+import tensorflow.keras as K
+
+
 def build_model(nx, layers, activations, lambtha, keep_prob):
     """
     Builds a neural network using Keras Sequential API.
