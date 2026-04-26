@@ -11,17 +11,15 @@ def one_hot(labels, classes=None):
     One-hot encodes a label vector.
 
     Args:
-        labels (tf.Tensor or np.ndarray): vector of labels
+        labels (tf.Tensor or list): vector of labels
         classes (int, optional): number of classes
 
     Returns:
         tf.Tensor: one-hot encoded matrix
     """
-    labels = K.backend.constant(labels)
+    labels = K.backend.cast(labels, 'int32')
 
     if classes is None:
         classes = K.backend.max(labels) + 1
 
-    one_hot_matrix = K.backend.one_hot(labels, int(classes))
-
-    return one_hot_matrix
+    return K.backend.one_hot(labels, classes)
