@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Normalizes (standardizes) a matrix X using mean and standard deviation.
+"""
 import numpy as np
 
 
@@ -20,5 +23,4 @@ def normalize(X, m, s):
     numpy.ndarray
         The normalized matrix.
     """
-    X_norm = (X - m) / s
-    return X_norm
+    return (X - m) / s
