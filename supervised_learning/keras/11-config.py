@@ -2,9 +2,7 @@
 """
 Module that saves and loads a model's configuration
 """
-
 import tensorflow.keras as K
-import json
 
 
 def save_config(network, filename):
