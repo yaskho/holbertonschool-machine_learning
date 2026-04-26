@@ -11,11 +11,11 @@ def one_hot(labels, classes=None):
     One-hot encodes a label vector.
 
     Args:
-        labels (tf.Tensor or list): vector of labels
-        classes (int, optional): number of classes
+        labels (array-like): labels vector
+        classes (int): number of classes
 
     Returns:
-        tf.Tensor: one-hot encoded matrix
+        tensor: one-hot encoded matrix
     """
     labels = K.backend.cast(labels, 'int32')
 
