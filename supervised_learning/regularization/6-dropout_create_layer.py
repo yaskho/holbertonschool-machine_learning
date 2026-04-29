@@ -1,14 +1,17 @@
-#!/usr/bin/env python3
 import tensorflow as tf
 
-def l2_reg_cost(cost, model):
-    """
-    Calculates cost with L2 regularization
-    """
-    l2_cost = cost
+def dropout_create_layer(prev, n, activation, keep_prob, training=True):
+    init = tf.keras.initializers.VarianceScaling(mode='fan_avg')
 
-    for layer in model.layers:
-        if hasattr(layer, 'kernel_regularizer') and layer.kernel_regularizer is not None:
-            l2_cost += tf.reduce_sum(layer.losses)
+    layer = tf.keras.layers.Dense(
+        units=n,
+        activation=activation,
+        kernel_initializer=init
+    )
 
-    return l2_cost
+    A = layer(prev)
+
+    if training:
+        A = tf.nn.dropout(A, rate=1 - keep_prob)
+
+    return A
