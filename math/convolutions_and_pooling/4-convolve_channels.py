@@ -21,7 +21,7 @@ def convolve_channels(images, kernel, padding='same', stride=(1, 1)):
     kh, kw, kc = kernel.shape
     sh, sw = stride
 
-    # Safety check (important but optional)
+    # Safety check
     if kc != c:
         raise ValueError("Kernel channels must match image channels")
 
@@ -34,10 +34,12 @@ def convolve_channels(images, kernel, padding='same', stride=(1, 1)):
     else:
         ph, pw = padding
 
-    # Pad images (NO padding on channels)
-    padded = np.pad(images,
-                    ((0, 0), (ph, ph), (pw, pw), (0, 0)),
-                    mode='constant')
+    # Pad images (no padding on channels)
+    padded = np.pad(
+        images,
+        ((0, 0), (ph, ph), (pw, pw), (0, 0)),
+        mode='constant'
+    )
 
     # Output dimensions
     output_h = (h + 2 * ph - kh) // sh + 1
@@ -51,7 +53,7 @@ def convolve_channels(images, kernel, padding='same', stride=(1, 1)):
             row = i * sh
             col = j * sw
 
-            region = padded[:, row:row+kh, col:col+kw, :]
+            region = padded[:, row:row + kh, col:col + kw, :]
             output[:, i, j] = np.sum(region * kernel, axis=(1, 2, 3))
 
     return output
