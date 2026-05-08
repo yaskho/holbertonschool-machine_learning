@@ -11,13 +11,6 @@ class Yolo:
                  class_t, nms_t, anchors):
         """
         Class constructor
-
-        Parameters:
-        - model_path: path to Darknet Keras model
-        - classes_path: path to classes file
-        - class_t: box score threshold
-        - nms_t: IOU threshold for non-max suppression
-        - anchors: anchor boxes
         """
         self.model = K.models.load_model(model_path)
 
@@ -38,7 +31,8 @@ class Yolo:
 
         Parameters:
         - outputs: list of numpy.ndarrays
-        - image_size: original image size [height, width]
+        - image_size: numpy.ndarray containing
+          [image_height, image_width]
 
         Returns:
         - boxes
@@ -49,11 +43,11 @@ class Yolo:
         box_confidences = []
         box_class_probs = []
 
-        input_h = self.model.input.shape[1]
-        input_w = self.model.input.shape[2]
-
         image_h = image_size[0]
         image_w = image_size[1]
+
+        input_h = self.model.input_shape[1]
+        input_w = self.model.input_shape[2]
 
         for i, output in enumerate(outputs):
             grid_h = output.shape[0]
@@ -65,22 +59,22 @@ class Yolo:
             tw = output[..., 2]
             th = output[..., 3]
 
-            cx = np.arange(grid_w)
-            cy = np.arange(grid_h)
+            c_x = np.arange(grid_w)
+            c_y = np.arange(grid_h)
 
-            cx, cy = np.meshgrid(cx, cy)
+            c_x, c_y = np.meshgrid(c_x, c_y)
 
-            cx = np.expand_dims(cx, axis=-1)
-            cy = np.expand_dims(cy, axis=-1)
+            c_x = np.expand_dims(c_x, axis=-1)
+            c_y = np.expand_dims(c_y, axis=-1)
 
-            bx = (self.sigmoid(tx) + cx) / grid_w
-            by = (self.sigmoid(ty) + cy) / grid_h
+            bx = (self.sigmoid(tx) + c_x) / grid_w
+            by = (self.sigmoid(ty) + c_y) / grid_h
 
-            pw = self.anchors[i, :, 0]
-            ph = self.anchors[i, :, 1]
+            anchor_w = self.anchors[i, :, 0]
+            anchor_h = self.anchors[i, :, 1]
 
-            bw = (pw * np.exp(tw)) / input_w
-            bh = (ph * np.exp(th)) / input_h
+            bw = (np.exp(tw) * anchor_w) / input_w
+            bh = (np.exp(th) * anchor_h) / input_h
 
             x1 = (bx - bw / 2) * image_w
             y1 = (by - bh / 2) * image_h
@@ -90,23 +84,25 @@ class Yolo:
             box = np.stack((x1, y1, x2, y2), axis=-1)
             boxes.append(box)
 
-            confidence = self.sigmoid(output[..., 4:5])
-            box_confidences.append(confidence)
+            box_confidence = self.sigmoid(output[..., 4:5])
+            box_confidences.append(box_confidence)
 
-            class_probs = self.sigmoid(output[..., 5:])
-            box_class_probs.append(class_probs)
+            box_class_prob = self.sigmoid(output[..., 5:])
+            box_class_probs.append(box_class_prob)
 
         return boxes, box_confidences, box_class_probs
 
-    def filter_boxes(self, boxes, box_confidences,
+    def filter_boxes(self, boxes,
+                     box_confidences,
                      box_class_probs):
         """
-        Filters boxes using objectness score and class probabilities
+        Filters boxes using objectness score
+        and class probabilities
 
         Parameters:
-        - boxes: list of processed boxes
-        - box_confidences: list of box confidences
-        - box_class_probs: list of class probabilities
+        - boxes
+        - box_confidences
+        - box_class_probs
 
         Returns:
         - filtered_boxes
@@ -117,10 +113,10 @@ class Yolo:
         box_classes = []
         box_scores = []
 
-        for box, confidence, class_prob in zip(
+        for box, confidence, class_probs in zip(
                 boxes, box_confidences, box_class_probs):
 
-            scores = confidence * class_prob
+            scores = confidence * class_probs
 
             classes = np.argmax(scores, axis=-1)
             class_scores = np.max(scores, axis=-1)
@@ -136,3 +132,4 @@ class Yolo:
         box_scores = np.concatenate(box_scores, axis=0)
 
         return filtered_boxes, box_classes, box_scores
+    
