@@ -26,6 +26,7 @@ class NST:
         """
         Class constructor
         """
+
         if (not isinstance(style_image, np.ndarray) or
                 style_image.ndim != 3 or style_image.shape[2] != 3):
             raise TypeError(
@@ -49,6 +50,9 @@ class NST:
         self.alpha = alpha
         self.beta = beta
         self.model = None
+
+        # IMPORTANT FIX
+        self.load_model()
 
     def load_model(self):
         """
