@@ -72,8 +72,7 @@ class NST:
         h = image.shape[0]
         w = image.shape[1]
 
-        long_side = max(h, w)
-        scale = 512 / long_side
+        scale = 512 / max(h, w)
 
         new_h = int(h * scale)
         new_w = int(w * scale)
@@ -84,7 +83,7 @@ class NST:
             method=tf.image.ResizeMethod.BICUBIC
         )
 
-        image = image / 255
+        image = image / 255.0
 
         image = tf.clip_by_value(image, 0, 1)
 
@@ -110,8 +109,8 @@ class NST:
         )
 
         self.model = tf.keras.models.Model(
-            vgg.input,
-            outputs
+            inputs=vgg.input,
+            outputs=outputs
         )
 
         self.model.trainable = False
@@ -141,7 +140,7 @@ class NST:
         return tf.expand_dims(gram, axis=0)
 
     def generate_features(self):
-        """Extracts style and content features"""
+        """Extract style and content features"""
 
         style_image = tf.keras.applications.vgg19.preprocess_input(
             self.style_image * 255
@@ -154,11 +153,9 @@ class NST:
         style_outputs = self.model(style_image)
         content_outputs = self.model(content_image)
 
-        style_features = style_outputs[:-1]
-
         self.gram_style_features = [
-            self.gram_matrix(style_feature)
-            for style_feature in style_features
+            self.gram_matrix(style_output)
+            for style_output in style_outputs[:-1]
         ]
 
         self.content_feature = content_outputs[-1]
@@ -199,7 +196,7 @@ class NST:
 
         weight = 1 / len(self.style_layers)
 
-        style_cost = 0
+        style_cost = tf.constant(0.0)
 
         for i in range(len(style_outputs)):
             layer_cost = self.layer_style_cost(
