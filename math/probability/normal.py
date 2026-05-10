@@ -44,27 +44,28 @@ class Normal:
             self.stddev = variance ** 0.5
 
     def z_score(self, x):
+        """Compute z-score."""
+        return (x - self.mean) / self.stddev
+
+    def x_value(self, z):
+        """Compute x from z-score."""
+        return (z * self.stddev) + self.mean
+
+    def pdf(self, x):
         """
-        Calculates the z-score of x.
+        Calculates the PDF for a given x-value.
 
         Args:
             x (float): x-value
 
         Returns:
-            float: z-score
+            float: PDF value
         """
 
-        return (x - self.mean) / self.stddev
+        x = float(x)
 
-    def x_value(self, z):
-        """
-        Calculates the x-value from a z-score.
+        pi = 3.1415926536
 
-        Args:
-            z (float): z-score
+        exponent = -0.5 * ((x - self.mean) / self.stddev) ** 2
 
-        Returns:
-            float: x-value
-        """
-
-        return (z * self.stddev) + self.mean
+        return (1 / (self.stddev * (2 * pi) ** 0.5)) * (2.7182818285 ** exponent)
