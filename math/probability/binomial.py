@@ -31,16 +31,7 @@ class Binomial:
             self.p = float(mean / self.n)
 
     def pmf(self, k):
-        """
-        Calculates the PMF for a given number of successes.
-
-        Args:
-            k (int): number of successes
-
-        Returns:
-            float: PMF value
-        """
-
+        """Probability mass function."""
         k = int(k)
 
         if k < 0 or k > self.n:
@@ -55,10 +46,33 @@ class Binomial:
         def combination(n, r):
             return factorial(n) / (factorial(r) * factorial(n - r))
 
-        comb = combination(self.n, k)
-
         return (
-            comb *
-            (self.p ** k) *
-            ((1 - self.p) ** (self.n - k))
+            combination(self.n, k)
+            * (self.p ** k)
+            * ((1 - self.p) ** (self.n - k))
         )
+
+    def cdf(self, k):
+        """
+        Calculates the CDF for a given number of successes.
+
+        Args:
+            k (int): number of successes
+
+        Returns:
+            float: CDF value
+        """
+
+        k = int(k)
+
+        if k < 0:
+            return 0
+
+        if k >= self.n:
+            k = self.n
+
+        total = 0
+        for i in range(k + 1):
+            total += self.pmf(i)
+
+        return total
