@@ -52,20 +52,42 @@ class Normal:
         return (z * self.stddev) + self.mean
 
     def pdf(self, x):
+        """Probability density function."""
+        x = float(x)
+
+        pi = 3.1415926536
+        exponent = -0.5 * ((x - self.mean) / self.stddev) ** 2
+
+        return (1 / (self.stddev * (2 * pi) ** 0.5)) * (2.7182818285 ** exponent)
+
+    def cdf(self, x):
         """
-        Calculates the PDF for a given x-value.
+        Calculates the CDF for a given x-value.
 
         Args:
             x (float): x-value
 
         Returns:
-            float: PDF value
+            float: CDF value
         """
 
         x = float(x)
 
+        # constants
         pi = 3.1415926536
+        sqrt2 = 2 ** 0.5
 
-        exponent = -0.5 * ((x - self.mean) / self.stddev) ** 2
+        z = (x - self.mean) / (self.stddev * sqrt2)
 
-        return (1 / (self.stddev * (2 * pi) ** 0.5)) * (2.7182818285 ** exponent)
+        # approximation of erf using numerical series (no imports allowed)
+        erf = 0
+        term = z
+        i = 0
+
+        while i < 10:
+            coef = (2 / (3.1415926536 ** 0.5))
+            erf += coef * term / (2 * i + 1)
+            term *= -(z ** 2) / (i + 1)
+            i += 1
+
+        return 0.5 * (1 + erf)
