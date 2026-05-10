@@ -91,13 +91,14 @@ class NST:
         h, w = image.shape[:2]
         if h > w:
             new_h = 512
-            new_w = int(w * 512 / h)
+            new_w = int(round(w * 512 / h))
         else:
             new_w = 512
-            new_h = int(h * 512 / w)
+            new_h = int(round(h * 512 / w))
  
+        image = tf.cast(image, tf.float32)
         image = tf.image.resize(
-            image[np.newaxis, ...],
+            tf.expand_dims(image, axis=0),
             [new_h, new_w],
             method='bicubic'
         )
