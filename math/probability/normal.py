@@ -12,7 +12,7 @@ class Normal:
         Args:
             data (list): Data used to estimate mean and stddev.
             mean (float): Mean of the distribution.
-            stddev (float): Standard deviation of the distribution.
+            stddev (float): Standard deviation.
 
         Raises:
             TypeError: If data is not a list.
@@ -42,3 +42,29 @@ class Normal:
             variance /= len(data)
 
             self.stddev = variance ** 0.5
+
+    def z_score(self, x):
+        """
+        Calculates the z-score of x.
+
+        Args:
+            x (float): x-value
+
+        Returns:
+            float: z-score
+        """
+
+        return (x - self.mean) / self.stddev
+
+    def x_value(self, z):
+        """
+        Calculates the x-value from a z-score.
+
+        Args:
+            z (float): z-score
+
+        Returns:
+            float: x-value
+        """
+
+        return (z * self.stddev) + self.mean
