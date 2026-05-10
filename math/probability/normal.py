@@ -6,31 +6,15 @@ class Normal:
     """Represents a normal distribution."""
 
     def __init__(self, data=None, mean=0., stddev=1.):
-        """
-        Initialize the normal distribution.
-
-        Args:
-            data (list): Data used to estimate mean and stddev.
-            mean (float): Mean of the distribution.
-            stddev (float): Standard deviation.
-
-        Raises:
-            TypeError: If data is not a list.
-            ValueError: If data has fewer than 2 values.
-            ValueError: If stddev is not positive.
-        """
-
+        """Initialize Normal distribution."""
         if data is None:
             if stddev <= 0:
                 raise ValueError("stddev must be a positive value")
-
             self.mean = float(mean)
             self.stddev = float(stddev)
-
         else:
             if not isinstance(data, list):
                 raise TypeError("data must be a list")
-
             if len(data) < 2:
                 raise ValueError("data must contain multiple values")
 
@@ -52,42 +36,37 @@ class Normal:
         return (z * self.stddev) + self.mean
 
     def pdf(self, x):
-        """Probability density function."""
+        """Normal PDF."""
         x = float(x)
-
         pi = 3.1415926536
+        e = 2.7182818285
+
         exponent = -0.5 * ((x - self.mean) / self.stddev) ** 2
 
-        return (1 / (self.stddev * (2 * pi) ** 0.5)) * (2.7182818285 ** exponent)
+        return (1 / (self.stddev * (2 * pi) ** 0.5)) * (e ** exponent)
 
     def cdf(self, x):
-        """
-        Calculates the CDF for a given x-value.
-
-        Args:
-            x (float): x-value
-
-        Returns:
-            float: CDF value
-        """
-
+        """Normal CDF using erf approximation."""
         x = float(x)
 
-        # constants
         pi = 3.1415926536
-        sqrt2 = 2 ** 0.5
+        e = 2.7182818285
 
-        z = (x - self.mean) / (self.stddev * sqrt2)
+        z = (x - self.mean) / (self.stddev * (2 ** 0.5))
 
-        # approximation of erf using numerical series (no imports allowed)
-        erf = 0
-        term = z
-        i = 0
+        # Abramowitz and Stegun approximation of erf
+        sign = 1
+        if z < 0:
+            sign = -1
+            z = -z
 
-        while i < 10:
-            coef = (2 / (3.1415926536 ** 0.5))
-            erf += coef * term / (2 * i + 1)
-            term *= -(z ** 2) / (i + 1)
-            i += 1
+        t = 1 / (1 + 0.3275911 * z)
+
+        erf = 1 - (((((1.061405429 * t - 1.453152027) * t)
+                     + 1.421413741) * t
+                     - 0.284496736) * t
+                     + 0.254829592) * t * (e ** (-z * z))
+
+        erf *= sign
 
         return 0.5 * (1 + erf)
