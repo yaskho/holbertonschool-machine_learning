@@ -59,7 +59,7 @@ class NST:
 
     @staticmethod
     def scale_image(image):
-        """Rescale image"""
+        """Rescales image"""
 
         if (not isinstance(image, np.ndarray) or
                 len(image.shape) != 3 or
@@ -89,7 +89,7 @@ class NST:
 
         image = tf.expand_dims(image, axis=0)
 
-        return image
+        return tf.cast(image, tf.float32)
 
     def load_model(self):
         """Loads VGG19 model"""
@@ -101,8 +101,10 @@ class NST:
 
         vgg.trainable = False
 
-        outputs = [vgg.get_layer(name).output
-                   for name in self.style_layers]
+        outputs = [
+            vgg.get_layer(name).output
+            for name in self.style_layers
+        ]
 
         outputs.append(
             vgg.get_layer(self.content_layer).output
@@ -127,11 +129,11 @@ class NST:
 
         _, h, w, c = input_layer.shape
 
-        tensor = tf.reshape(input_layer, [h * w, c])
+        features = tf.reshape(input_layer, (h * w, c))
 
         gram = tf.matmul(
-            tensor,
-            tensor,
+            features,
+            features,
             transpose_a=True
         )
 
@@ -140,7 +142,7 @@ class NST:
         return tf.expand_dims(gram, axis=0)
 
     def generate_features(self):
-        """Extract style and content features"""
+        """Extracts style and content features"""
 
         style_image = tf.keras.applications.vgg19.preprocess_input(
             self.style_image * 255
@@ -196,7 +198,7 @@ class NST:
 
         weight = 1 / len(self.style_layers)
 
-        style_cost = tf.constant(0.0)
+        style_cost = tf.constant(0.0, dtype=tf.float32)
 
         for i in range(len(style_outputs)):
             layer_cost = self.layer_style_cost(
@@ -204,6 +206,9 @@ class NST:
                 self.gram_style_features[i]
             )
 
-            style_cost += weight * layer_cost
+            style_cost = tf.add(
+                style_cost,
+                weight * layer_cost
+            )
 
         return style_cost
