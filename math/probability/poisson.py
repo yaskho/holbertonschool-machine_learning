@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Poisson distribution module."""
+"""Exponential distribution module."""
 
 
-class Poisson:
-    """Represents a Poisson distribution."""
+class Exponential:
+    """Represents an exponential distribution."""
 
     def __init__(self, data=None, lambtha=1.):
         """
-        Initialize the Poisson distribution.
+        Initialize the exponential distribution.
 
         Args:
             data (list): List of data to estimate lambtha.
@@ -16,12 +16,14 @@ class Poisson:
         Raises:
             TypeError: If data is not a list.
             ValueError: If data contains fewer than 2 values.
-            ValueError: If lambtha is not a positive value.
+            ValueError: If lambtha is not positive.
         """
 
         if data is None:
             if lambtha <= 0:
-                raise ValueError("lambtha must be a positive value")
+                raise ValueError(
+                    "lambtha must be a positive value"
+                )
 
             self.lambtha = float(lambtha)
 
@@ -34,52 +36,5 @@ class Poisson:
                     "data must contain multiple values"
                 )
 
-            self.lambtha = float(sum(data) / len(data))
-
-    def pmf(self, k):
-        """
-        Calculates the PMF for a given number of successes.
-
-        Args:
-            k (int): Number of successes.
-
-        Returns:
-            float: PMF value for k.
-        """
-
-        k = int(k)
-
-        if k < 0:
-            return 0
-
-        e = 2.7182818285
-
-        factorial = 1
-        for i in range(1, k + 1):
-            factorial *= i
-
-        return ((e ** (-self.lambtha)) *
-                (self.lambtha ** k)) / factorial
-
-    def cdf(self, k):
-        """
-        Calculates the CDF for a given number of successes.
-
-        Args:
-            k (int): Number of successes.
-
-        Returns:
-            float: CDF value for k.
-        """
-
-        k = int(k)
-
-        if k < 0:
-            return 0
-
-        cdf = 0
-
-        for i in range(k + 1):
-            cdf += self.pmf(i)
-
-        return cdf
+            mean = sum(data) / len(data)
+            self.lambtha = 1 / float(mean)
