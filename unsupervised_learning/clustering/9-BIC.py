@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
-expectation_maximization = __import__('8-EM').expectation_maximization
-
+EM = __import__('8-EM').expectation_maximization
 
 def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
     if not isinstance(X, np.ndarray) or len(X.shape) != 2:
@@ -22,12 +21,11 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
     results = []
 
     for k in ks:
-        pi, m, S, g, l = expectation_maximization(X, k, iterations, tol, verbose)
-
+        pi, m, S, g, l = EM(X, k, iterations, tol, verbose)
         if pi is None:
             return None, None, None, None
 
-        # number of parameters in GMM
+        # number of parameters
         p = (k * d) + (k * d * (d + 1)) // 2 + (k - 1)
 
         bic = p * np.log(n) - 2 * l
