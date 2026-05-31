@@ -8,7 +8,7 @@ import numpy as np
 
 def pdf(X, m, S):
     """
-    Calculates probability density function of a Gaussian distribution.
+    Calculates the probability density function of a Gaussian distribution.
 
     Parameters:
         X (n, d): data points
@@ -16,7 +16,7 @@ def pdf(X, m, S):
         S (d, d): covariance matrix
 
     Returns:
-        P (n,): PDF values
+        (n,) array of probabilities or None
     """
     try:
         if not isinstance(X, np.ndarray) or len(X.shape) != 2:
@@ -26,25 +26,18 @@ def pdf(X, m, S):
 
         n, d = X.shape
 
-        # reshape mean for broadcasting
         diff = X - m
 
-        # inverse and determinant
         S_inv = np.linalg.inv(S)
         det_S = np.linalg.det(S)
 
-        # normalization constant
         norm_const = 1 / (((2 * np.pi) ** (d / 2)) * np.sqrt(det_S))
 
-        # Mahalanobis distance (vectorized)
-        exp_term = np.sum(diff @ S_inv * diff, axis=1)
+        exp_term = np.sum((diff @ S_inv) * diff, axis=1)
 
         P = norm_const * np.exp(-0.5 * exp_term)
 
-        # numerical stability
-        P = np.maximum(P, 1e-300)
-
-        return P
+        return np.maximum(P, 1e-300)
 
     except Exception:
         return None
