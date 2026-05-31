@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+
 import numpy as np
+
 
 def initialize(X, k):
     """
@@ -17,17 +19,13 @@ def initialize(X, k):
         if not isinstance(k, int) or k <= 0:
             return None
 
-        d = X.shape[1]
-
-        # compute per-dimension min and max
         X_min = X.min(axis=0)
         X_max = X.max(axis=0)
 
-        # one call to uniform (required constraint)
         centroids = np.random.uniform(
             low=X_min,
             high=X_max,
-            size=(k, d)
+            size=(k, X.shape[1])
         )
 
         return centroids
