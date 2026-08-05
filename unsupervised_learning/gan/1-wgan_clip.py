@@ -101,7 +101,8 @@ class WGAN_clip(keras.Model):
         Executes a single training step for the Wasserstein GAN with clip.
 
         Parameters:
-            useless_argument: Unused input required by Keras Model.fit protocol.
+            useless_argument: Unused input required by Keras Model.fit
+                protocol.
 
         Returns:
             Dictionary containing 'discr_loss' and 'gen_loss'.
