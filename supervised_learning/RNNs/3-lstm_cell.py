@@ -45,8 +45,10 @@ class LSTMCell:
         Performs forward propagation for one time step.
 
         Parameters:
-            h_prev (numpy.ndarray): Shape (m, h) containing previous hidden state
-            c_prev (numpy.ndarray): Shape (m, h) containing previous cell state
+            h_prev (numpy.ndarray): Shape (m, h) containing previous hidden
+                                   state
+            c_prev (numpy.ndarray): Shape (m, h) containing previous cell
+                                   state
             x_t (numpy.ndarray): Shape (m, i) containing data input for cell
 
         Returns:
