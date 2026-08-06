@@ -42,8 +42,8 @@ class Transformer(tf.keras.Model):
         Executes the full Transformer network computation graph
 
         Args:
-            inputs: Tensor of shape (batch, input_seq_len) with input token IDs
-            target: Tensor of shape (batch, target_seq_len) with target token IDs
+            inputs: Tensor of shape (batch, input_seq_len) containing inputs
+            target: Tensor of shape (batch, target_seq_len) containing targets
             training: Boolean determining if model is training
             encoder_mask: Padding mask to be applied to the encoder
             look_ahead_mask: Mask applied to 1st MHA layer in decoder
@@ -51,17 +51,13 @@ class Transformer(tf.keras.Model):
 
         Returns:
             Tensor of shape (batch, target_seq_len, target_vocab)
-            containing logit predictions across the target vocabulary
         """
-        # 1. Pass input sequence through the Encoder
         enc_output = self.encoder(inputs, training, encoder_mask)
 
-        # 2. Pass target sequence & encoder hidden states through Decoder
         dec_output = self.decoder(
             target, enc_output, training, look_ahead_mask, decoder_mask
         )
 
-        # 3. Project output vectors to full target vocabulary logits
         final_output = self.linear(dec_output)
 
         return final_output
