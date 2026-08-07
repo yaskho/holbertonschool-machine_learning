@@ -34,7 +34,6 @@ class Dataset:
             tokenizer_pt: Portuguese sub-word tokenizer
             tokenizer_en: English sub-word tokenizer
         """
-        # Load pre-trained fast tokenizers
         base_tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
             'neuralmind/bert-base-portuguese-cased'
         )
@@ -42,23 +41,16 @@ class Dataset:
             'bert-base-uncased'
         )
 
-        # Generators for training tokenizers from dataset
-        def pt_iterator():
-            for pt, _ in data:
-                yield pt.numpy().decode('utf-8')
+        pt_texts = [pt.numpy().decode('utf-8') for pt, _ in data]
+        en_texts = [en.numpy().decode('utf-8') for _, en in data]
 
-        def en_iterator():
-            for _, en in data:
-                yield en.numpy().decode('utf-8')
-
-        # Train new tokenizers with max vocab size 2^13 (8192)
         vocab_size = 2 ** 13
 
         tokenizer_pt = base_tokenizer_pt.train_new_from_iterator(
-            pt_iterator(), vocab_size=vocab_size
+            pt_texts, vocab_size=vocab_size
         )
         tokenizer_en = base_tokenizer_en.train_new_from_iterator(
-            en_iterator(), vocab_size=vocab_size
+            en_texts, vocab_size=vocab_size
         )
 
         return tokenizer_pt, tokenizer_en
