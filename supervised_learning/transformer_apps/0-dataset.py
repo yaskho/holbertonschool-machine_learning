@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Module containing the Dataset class to load and prep a dataset
-for Portuguese to English Machine Translation.
+Module for loading and preparing Portuguese-to-English translation dataset.
 """
 import transformers
 from setup import load_pt2en
@@ -9,13 +8,12 @@ from setup import load_pt2en
 
 class Dataset:
     """
-    Loads and prepares the Portuguese-to-English translation dataset,
-    and initializes training sub-word tokenizers.
+    Loads and preps a dataset for Portuguese-to-English machine translation.
     """
 
     def __init__(self):
         """
-        Class constructor initializing datasets and tokenizers.
+        Initializes dataset splits and Portuguese/English tokenizers.
         """
         self.data_train = load_pt2en('train')
         self.data_valid = load_pt2en('validation')
@@ -25,32 +23,53 @@ class Dataset:
 
     def tokenize_dataset(self, data):
         """
-        Creates and trains sub-word tokenizers for Portuguese and English text.
+        Creates sub-word tokenizers for Portuguese and English text.
 
         Args:
-            data: tf.data.Dataset containing (pt, en) sentence tuples.
+            data: tf.data.Dataset of (pt, en) sentence tuples
 
         Returns:
-            tokenizer_pt: Portuguese sub-word tokenizer
-            tokenizer_en: English sub-word tokenizer
+            tokenizer_pt, tokenizer_en: trained sub-word tokenizers
         """
-        base_tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
-            'neuralmind/bert-base-portuguese-cased'
-        )
-        base_tokenizer_en = transformers.AutoTokenizer.from_pretrained(
-            'bert-base-uncased'
-        )
+        pt_model = 'neuralmind/bert-base-portuguese-cased'
+        en_model = 'bert-base-uncased'
 
-        pt_texts = [pt.numpy().decode('utf-8') for pt, _ in data]
-        en_texts = [en.numpy().decode('utf-8') for _, en in data]
+        tokenizer_pt = transformers.AutoTokenizer.from_pretrained(pt_model)
+        tokenizer_en = transformers.AutoTokenizer.from_pretrained(en_model)
+
+        def pt_iterator():
+            """Yields Portuguese strings safely from dataset."""
+            dataset_iter = (data.as_numpy_iterator()
+                            if hasattr(data, 'as_numpy_iterator')
+                            else data)
+            for pt, _ in dataset_iter:
+                if isinstance(pt, bytes):
+                    yield pt.decode('utf-8')
+                elif hasattr(pt, 'numpy'):
+                    yield pt.numpy().decode('utf-8')
+                else:
+                    yield str(pt)
+
+        def en_iterator():
+            """Yields English strings safely from dataset."""
+            dataset_iter = (data.as_numpy_iterator()
+                            if hasattr(data, 'as_numpy_iterator')
+                            else data)
+            for _, en in dataset_iter:
+                if isinstance(en, bytes):
+                    yield en.decode('utf-8')
+                elif hasattr(en, 'numpy'):
+                    yield en.numpy().decode('utf-8')
+                else:
+                    yield str(en)
 
         vocab_size = 2 ** 13
 
-        tokenizer_pt = base_tokenizer_pt.train_new_from_iterator(
-            pt_texts, vocab_size=vocab_size
+        tokenizer_pt = tokenizer_pt.train_new_from_iterator(
+            pt_iterator(), vocab_size=vocab_size
         )
-        tokenizer_en = base_tokenizer_en.train_new_from_iterator(
-            en_texts, vocab_size=vocab_size
+        tokenizer_en = tokenizer_en.train_new_from_iterator(
+            en_iterator(), vocab_size=vocab_size
         )
 
         return tokenizer_pt, tokenizer_en
