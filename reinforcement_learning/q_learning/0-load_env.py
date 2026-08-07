@@ -17,9 +17,6 @@ def load_frozen_lake(desc=None, map_name=None, is_slippery=False):
     Returns:
         The loaded gymnasium environment
     """
-    if desc is None and map_name is None:
-        desc = gym.envs.toy_text.frozen_lake.generate_random_map(size=8)
-
     return gym.make(
         'FrozenLake-v1',
         desc=desc,
