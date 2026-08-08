@@ -1,42 +1,41 @@
-```python
 #!/usr/bin/env python3
 """Monte Carlo algorithm."""
-
-import numpy as np
 
 
 def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
                 alpha=0.1, gamma=0.99):
-    """Performs Monte Carlo prediction on an environment.
+    """Performs the Monte Carlo algorithm.
 
     Args:
-        env: The environment instance.
-        V: A numpy.ndarray containing the value estimates.
-        policy: Function that takes a state and returns an action.
-        episodes: Number of episodes to train over.
+        env: Environment instance.
+        V: Value estimate.
+        policy: Policy function.
+        episodes: Number of episodes.
         max_steps: Maximum number of steps per episode.
         alpha: Learning rate.
         gamma: Discount rate.
 
     Returns:
-        The updated value estimate V.
+        Updated value estimate V.
     """
     for _ in range(episodes):
-        state, _ = env.reset()
-        episode = []
+        state = env.reset()[0]
+        states = []
+        rewards = []
 
         for _ in range(max_steps):
+            states.append(state)
             action = policy(state)
-            next_state, reward, terminated, truncated, _ = env.step(action)
-            episode.append((state, reward))
-            state = next_state
+            state, reward, terminated, truncated, _ = env.step(action)
+            rewards.append(reward)
 
             if terminated or truncated:
                 break
 
         G = 0
-        for state, reward in reversed(episode):
-            G = gamma * G + reward
-            V[state] = V[state] + alpha * (G - V[state])
+        for i in range(len(states) - 1, -1, -1):
+            G = rewards[i] + gamma * G
+            state = states[i]
+            V[state] += alpha * (G - V[state])
 
     return V
