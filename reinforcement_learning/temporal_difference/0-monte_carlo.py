@@ -1,3 +1,7 @@
+Here is the complete implementation for 0-monte_carlo.py conforming to Gymnasium specifications, First-Visit Monte Carlo algorithm guidelines, and PEP 8 / pycodestyle requirements.
+
+0-monte_carlo.py
+Python
 #!/usr/bin/env python3
 """
 Contains function to perform Monte Carlo policy evaluation.
