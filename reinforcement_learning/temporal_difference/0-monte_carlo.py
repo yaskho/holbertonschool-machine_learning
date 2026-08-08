@@ -1,48 +1,42 @@
-Here is the complete implementation for 0-monte_carlo.py conforming to Gymnasium specifications, First-Visit Monte Carlo algorithm guidelines, and PEP 8 / pycodestyle requirements.
-
-0-monte_carlo.py
-Python
+```python
 #!/usr/bin/env python3
-"""
-Contains function to perform Monte Carlo policy evaluation.
-"""
+"""Monte Carlo algorithm."""
+
 import numpy as np
 
 
 def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
                 alpha=0.1, gamma=0.99):
-    """
-    Performs the Monte Carlo algorithm for value estimation.
+    """Performs Monte Carlo prediction on an environment.
 
     Args:
-        env: environment instance
-        V: numpy.ndarray of shape (s,) containing the value estimate
-        policy: function that takes a state and returns next action
-        episodes: total number of episodes to train over
-        max_steps: maximum number of steps per episode
-        alpha: learning rate
-        gamma: discount rate
+        env: The environment instance.
+        V: A numpy.ndarray containing the value estimates.
+        policy: Function that takes a state and returns an action.
+        episodes: Number of episodes to train over.
+        max_steps: Maximum number of steps per episode.
+        alpha: Learning rate.
+        gamma: Discount rate.
 
     Returns:
-        V: updated value estimate
+        The updated value estimate V.
     """
     for _ in range(episodes):
         state, _ = env.reset()
         episode = []
+
         for _ in range(max_steps):
             action = policy(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
             episode.append((state, reward))
             state = next_state
+
             if terminated or truncated:
                 break
 
         G = 0
-        states = [step[0] for step in episode]
-        for i in range(len(episode) - 1, -1, -1):
-            state, reward = episode[i]
+        for state, reward in reversed(episode):
             G = gamma * G + reward
-            if state not in states[:i]:
-                V[state] += alpha * (G - V[state])
+            V[state] = V[state] + alpha * (G - V[state])
 
     return V
