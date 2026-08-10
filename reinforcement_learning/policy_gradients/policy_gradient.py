@@ -25,15 +25,16 @@ def policy(matrix, weight):
 
 def policy_gradient(state, weight):
     """
-    Computes the Monte-Carlo policy gradient based on a state and weight matrix.
+    Computes the Monte-Carlo policy gradient based on a state
+    and weight matrix.
 
     Args:
         state (np.ndarray): Current observation of the environment.
         weight (np.ndarray): Matrix of random weights.
 
     Returns:
-        tuple: (action, gradient) where action is the sampled action index
-               and gradient is the computed policy gradient matrix.
+        tuple: (action, gradient) where action is sampled action index
+               and gradient is computed policy gradient matrix.
     """
     if state.ndim == 1:
         state = state[np.newaxis, :]
