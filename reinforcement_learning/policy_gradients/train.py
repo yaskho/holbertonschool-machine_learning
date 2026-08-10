@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Module to train a Policy Gradient (REINFORCE) agent.
+Module to train a Policy Gradient (REINFORCE) agent with optional rendering.
 """
 import numpy as np
 policy_gradient = __import__('policy_gradient').policy_gradient
 
 
-def train(env, nb_episodes, alpha=0.000045, gamma=0.98):
+def train(env, nb_episodes, alpha=0.000045, gamma=0.98, show_result=False):
     """
     Implements full training using Monte-Carlo policy gradient (REINFORCE).
 
@@ -15,6 +15,7 @@ def train(env, nb_episodes, alpha=0.000045, gamma=0.98):
         nb_episodes (int): Number of episodes used for training.
         alpha (float): Learning rate.
         gamma (float): Discount factor.
+        show_result (bool): Render environment every 1000 episodes if True.
 
     Returns:
         list: All values of score (sum of all rewards per episode).
@@ -29,6 +30,9 @@ def train(env, nb_episodes, alpha=0.000045, gamma=0.98):
         rewards = []
 
         while True:
+            if show_result and episode % 1000 == 0:
+                env.render()
+
             action, grad = policy_gradient(state, weight)
             next_state, reward, terminated, truncated, _ = env.step(action)
             grads.append(grad)
