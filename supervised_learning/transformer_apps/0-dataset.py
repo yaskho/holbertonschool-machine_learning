@@ -34,20 +34,30 @@ class Dataset:
             'bert-base-uncased'
         )
 
-        def pt_generator():
-            for pt, _ in data:
-                yield pt.numpy().decode('utf-8')
+        pt_sentences = []
+        en_sentences = []
 
-        def en_generator():
-            for _, en in data:
-                yield en.numpy().decode('utf-8')
+        for pt, en in data:
+            if hasattr(pt, 'numpy'):
+                pt_sentences.append(pt.numpy().decode('utf-8'))
+            elif isinstance(pt, bytes):
+                pt_sentences.append(pt.decode('utf-8'))
+            else:
+                pt_sentences.append(str(pt))
+
+            if hasattr(en, 'numpy'):
+                en_sentences.append(en.numpy().decode('utf-8'))
+            elif isinstance(en, bytes):
+                en_sentences.append(en.decode('utf-8'))
+            else:
+                en_sentences.append(str(en))
 
         tokenizer_pt = tokenizer_pt.train_new_from_iterator(
-            pt_generator(),
+            pt_sentences,
             vocab_size=2**13
         )
         tokenizer_en = tokenizer_en.train_new_from_iterator(
-            en_generator(),
+            en_sentences,
             vocab_size=2**13
         )
 
