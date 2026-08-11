@@ -15,6 +15,7 @@ class Dataset:
         self.tokenizer_pt, self.tokenizer_en = self.tokenize_dataset(
             self.data_train
         )
+        self.data_train = load_pt2en('train')
 
     def tokenize_dataset(self, data):
         """Creates sub-word tokenizers for our dataset.
@@ -34,19 +35,19 @@ class Dataset:
             'bert-base-uncased'
         )
 
-        def decode_str(val):
-            if hasattr(val, 'numpy'):
-                val = val.numpy()
-            if isinstance(val, bytes):
-                return val.decode('utf-8')
-            return str(val)
+        pt_sentences = []
+        en_sentences = []
+
+        for pt, en in data:
+            pt_sentences.append(pt.numpy().decode('utf-8'))
+            en_sentences.append(en.numpy().decode('utf-8'))
 
         tokenizer_pt = tokenizer_pt.train_new_from_iterator(
-            (decode_str(pt) for pt, _ in data),
+            pt_sentences,
             vocab_size=2**13
         )
         tokenizer_en = tokenizer_en.train_new_from_iterator(
-            (decode_str(en) for _, en in data),
+            en_sentences,
             vocab_size=2**13
         )
 
