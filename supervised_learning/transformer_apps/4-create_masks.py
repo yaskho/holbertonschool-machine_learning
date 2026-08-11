@@ -33,7 +33,7 @@ def create_masks(inputs, target):
         tf.math.equal(target, 0),
         tf.float32
     )
-    target_padding_mask = target_padding_mask[:, tf.newaxis, :]
+    target_padding_mask = target_padding_mask[:, tf.newaxis, tf.newaxis, :]
 
     seq_len = tf.shape(target)[1]
 
