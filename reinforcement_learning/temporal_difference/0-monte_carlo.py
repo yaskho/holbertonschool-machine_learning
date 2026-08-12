@@ -1,68 +1,45 @@
 #!/usr/bin/env python3
 """
-SARSA(lambda) algorithm implementation
+Monte Carlo Policy Evaluation module.
 """
 import numpy as np
 
 
-def sarsa_lambtha(env, Q, lambtha, episodes=5000, max_steps=100,
-                  alpha=0.1, gamma=0.99, epsilon=1, min_epsilon=0.1,
-                  epsilon_decay=0.05):
+def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1, gamma=0.99):
     """
-    Performs SARSA(lambda) on a gymnasium environment
-
+    Performs the Monte Carlo algorithm to update the value estimate.
+    
     Parameters:
-        env: environment instance
-        Q: numpy.ndarray of shape (s, a) containing the Q table
-        lambtha: eligibility trace factor
-        episodes: total number of episodes to train over
-        max_steps: maximum number of steps per episode
-        alpha: learning rate
-        gamma: discount rate
-        epsilon: initial threshold for epsilon greedy
-        min_epsilon: minimum value that epsilon should decay to
-        epsilon_decay: decay rate for updating epsilon between episodes
-
+    - env: the openAI gymnasium environment instance
+    - V: numpy.ndarray of shape (s,) containing the value estimate
+    - policy: a function that takes in a state and returns an action
+    - episodes: total number of episodes to train over
+    - max_steps: maximum number of steps per episode
+    - alpha: the learning rate
+    - gamma: the discount rate
+    
     Returns:
-        Q: updated Q table
+    - V: the updated value estimate
     """
-    init_epsilon = epsilon
-
-    for episode in range(episodes):
+    for _ in range(episodes):
         state, _ = env.reset()
-        E = np.zeros_like(Q)
-
-        if np.random.uniform(0, 1) < epsilon:
-            action = np.random.randint(0, Q.shape[1])
-        else:
-            action = np.argmax(Q[state])
+        episode = []
 
         for _ in range(max_steps):
+            action = policy(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
-
-            if np.random.uniform(0, 1) < epsilon:
-                next_action = np.random.randint(0, Q.shape[1])
-            else:
-                next_action = np.argmax(Q[next_state])
-
-            if done:
-                delta = reward - Q[state, action]
-            else:
-                delta = reward + gamma * Q[next_state, next_action] - Q[state, action]
-
-            E[state, action] += 1
-            Q += alpha * delta * E
-            E *= gamma * lambtha
-
-            if done:
+            episode.append((state, reward))
+            state = next_state
+            if terminated or truncated:
                 break
 
-            state = next_state
-            action = next_action
+        G = 0
+        states = [x[0] for x in episode]
+        for t in range(len(episode) - 1, -1, -1):
+            state, reward = episode[t]
+            G = gamma * G + reward
+            # First-visit Monte Carlo update
+            if state not in states[:t]:
+                V[state] = V[state] + alpha * (G - V[state])
 
-        epsilon = min_epsilon + (init_epsilon - min_epsilon) * np.exp(
-            -epsilon_decay * episode
-        )
-
-    return Q
+    return V
