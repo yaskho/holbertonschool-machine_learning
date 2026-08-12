@@ -20,7 +20,7 @@ def gmm(X, k):
         clss: numpy.ndarray of shape (n,) containing cluster indices
         bic: BIC value for the model
     """
-    gmm_model = sklearn.mixture.GaussianMixture(n_clusters=k)
+    gmm_model = sklearn.mixture.GaussianMixture(n_components=k)
     gmm_model.fit(X)
 
     pi = gmm_model.weights_
