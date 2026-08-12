@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
+"""
+Module to calculate normalization constants of a matrix.
+"""
+
 import numpy as np
 
 
 def normalization_constants(X):
     """
-    Calculates the normalization constants of a matrix.
+    Calculates the normalization (standardization) constants of a matrix.
 
-    Parameters
-    ----------
-    X : numpy.ndarray of shape (m, nx)
-        Matrix containing the data set.
+    Args:
+        X (numpy.ndarray): Matrix of shape (m, nx) to normalize.
+            m is the number of data points.
+            nx is the number of features.
 
-    Returns
-    -------
-    mean : numpy.ndarray of shape (nx,)
-        Mean of each feature.
-    std : numpy.ndarray of shape (nx,)
-        Standard deviation of each feature.
+    Returns:
+        tuple: (mean, std) containing the mean and standard deviation
+            of each feature, respectively.
     """
-    mean = np.mean(X, axis=0)
-    std = np.std(X, axis=0)
-
-    return mean, std
+    return np.mean(X, axis=0), np.std(X, axis=0)
