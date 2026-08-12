@@ -20,7 +20,7 @@ def initialize(X, k):
     """
     if not isinstance(X, np.ndarray) or len(X.shape) != 2:
         return None
-    if not isinstance(k, int) or type(k) is not int or k <= 0 or k > X.shape[0]:
+    if type(k) is not int or k <= 0 or k > X.shape[0]:
         return None
 
     low = np.min(X, axis=0)
@@ -46,11 +46,9 @@ def kmeans(X, k, iterations=1000):
     """
     if not isinstance(X, np.ndarray) or len(X.shape) != 2:
         return None, None
-    if not isinstance(k, int) or type(k) is not int or k <= 0 or k > X.shape[0]:
+    if type(k) is not int or k <= 0 or k > X.shape[0]:
         return None, None
-    if not isinstance(iterations, int) or type(iterations) is not int:
-        return None, None
-    if iterations <= 0:
+    if type(iterations) is not int or iterations <= 0:
         return None, None
 
     C = initialize(X, k)
