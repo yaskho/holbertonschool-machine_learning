@@ -1,9 +1,6 @@
-Here is the updated implementation for 1-gp.py with the predict method added:
-
-Python
 #!/usr/bin/env python3
 """
-Gaussian Process prediction module
+Gaussian Process initialization and prediction module
 """
 import numpy as np
 
@@ -62,11 +59,9 @@ class GaussianProcess:
         K_ss = self.kernel(X_s, X_s)
         K_inv = np.linalg.inv(self.K)
 
-        # Posterior mean: \mu_* = K_s^T K^-1 Y
         mu = K_s.T @ K_inv @ self.Y
         mu = mu.reshape(-1)
 
-        # Posterior covariance: \Sigma_* = K_ss - K_s^T K^-1 K_s
         sigma_cov = K_ss - K_s.T @ K_inv @ K_s
         sigma = np.diag(sigma_cov)
 
