@@ -1,6 +1,3 @@
-Here is the implementation for 2-gp.py with the update method added:
-
-Python
 #!/usr/bin/env python3
 """
 Gaussian Process update module
