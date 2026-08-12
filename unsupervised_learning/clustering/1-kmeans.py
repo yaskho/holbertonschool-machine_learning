@@ -3,7 +3,6 @@
 Contains the function kmeans that performs K-means clustering on a dataset
 """
 import numpy as np
-initialize = __import__('0-initialize').initialize
 
 
 def kmeans(X, k, iterations=1000):
@@ -29,12 +28,12 @@ def kmeans(X, k, iterations=1000):
     if not isinstance(iterations, int) or iterations <= 0:
         return None, None
 
-    C = initialize(X, k)
-    if C is None:
-        return None, None
-
+    n, d = X.shape
     low = np.min(X, axis=0)
     high = np.max(X, axis=0)
+
+    # 1st call to np.random.uniform for initial centroids
+    C = np.random.uniform(low, high, size=(k, d))
 
     # Loop 1: Outer iterations loop
     for i in range(iterations):
@@ -47,6 +46,7 @@ def kmeans(X, k, iterations=1000):
         for j in range(k):
             points = X[clss == j]
             if len(points) == 0:
+                # 2nd call to np.random.uniform for reinitializing empty cluster
                 C[j] = np.random.uniform(low, high)
             else:
                 C[j] = np.mean(points, axis=0)
