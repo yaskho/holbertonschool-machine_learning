@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
+"""
+Module to evaluate early stopping in neural network training.
+"""
+
 
 def early_stopping(cost, opt_cost, threshold, patience, count):
     """
-    Determines if early stopping should occur
+    Determines if gradient descent should be stopped early.
 
-    cost: current validation cost
-    opt_cost: lowest recorded validation cost
-    threshold: minimum improvement required
-    patience: max allowed non-improvement steps
-    count: current number of consecutive non-improving steps
+    Args:
+        cost: current validation cost
+        opt_cost: lowest recorded validation cost
+        threshold: threshold used for early stopping
+        patience: patience count used for early stopping
+        count: count of how long the threshold has not been met
 
-    Returns: (stop_early, updated_count)
+    Returns:
+        tuple: (boolean indicating whether to stop early, updated count)
     """
-
-    # Check if improvement is significant
     if opt_cost - cost > threshold:
-        # Improvement → reset counter
-        return (False, 0)
+        count = 0
+    else:
+        count += 1
 
-    # No sufficient improvement → increase counter
-    count += 1
-
-    # Stop if patience exceeded
-    if count >= patience:
-        return (True, patience)
-
-    return (False, count)
+    return count >= patience, count
