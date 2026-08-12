@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Contains the gmm function that calculates a Gaussian Mixture Model using sklearn
+Calculates a Gaussian Mixture Model using scikit-learn
 """
 import sklearn.mixture
 
