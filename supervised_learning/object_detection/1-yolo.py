@@ -55,8 +55,8 @@ class Yolo:
         box_class_probs = []
 
         image_height, image_width = image_size[0], image_size[1]
-        input_height = self.model.input.shape[1]
-        input_width = self.model.input.shape[2]
+        input_width = self.model.input.shape[1]
+        input_height = self.model.input.shape[2]
 
         def sigmoid(x):
             return 1 / (1 + np.exp(-x))
