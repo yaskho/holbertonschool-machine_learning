@@ -1,46 +1,68 @@
 #!/usr/bin/env python3
-"""Monte Carlo algorithm."""
-
+"""
+SARSA(lambda) algorithm implementation
+"""
 import numpy as np
 
 
-def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
-                alpha=0.1, gamma=0.99):
-    """Performs the Monte Carlo algorithm.
+def sarsa_lambtha(env, Q, lambtha, episodes=5000, max_steps=100,
+                  alpha=0.1, gamma=0.99, epsilon=1, min_epsilon=0.1,
+                  epsilon_decay=0.05):
+    """
+    Performs SARSA(lambda) on a gymnasium environment
 
-    Args:
-        env: Environment instance.
-        V: Value estimate.
-        policy: Policy function.
-        episodes: Number of episodes.
-        max_steps: Maximum number of steps per episode.
-        alpha: Learning rate.
-        gamma: Discount rate.
+    Parameters:
+        env: environment instance
+        Q: numpy.ndarray of shape (s, a) containing the Q table
+        lambtha: eligibility trace factor
+        episodes: total number of episodes to train over
+        max_steps: maximum number of steps per episode
+        alpha: learning rate
+        gamma: discount rate
+        epsilon: initial threshold for epsilon greedy
+        min_epsilon: minimum value that epsilon should decay to
+        epsilon_decay: decay rate for updating epsilon between episodes
 
     Returns:
-        Updated value estimate V.
+        Q: updated Q table
     """
-    for _ in range(episodes):
-        state = env.reset()[0]
-        episode = []
+    init_epsilon = epsilon
+
+    for episode in range(episodes):
+        state, _ = env.reset()
+        E = np.zeros_like(Q)
+
+        if np.random.uniform(0, 1) < epsilon:
+            action = np.random.randint(0, Q.shape[1])
+        else:
+            action = np.argmax(Q[state])
 
         for _ in range(max_steps):
-            action = policy(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
-            episode.append((state, reward))
-            state = next_state
+            done = terminated or truncated
 
-            if terminated or truncated:
+            if np.random.uniform(0, 1) < epsilon:
+                next_action = np.random.randint(0, Q.shape[1])
+            else:
+                next_action = np.argmax(Q[next_state])
+
+            if done:
+                delta = reward - Q[state, action]
+            else:
+                delta = reward + gamma * Q[next_state, next_action] - Q[state, action]
+
+            E[state, action] += 1
+            Q += alpha * delta * E
+            E *= gamma * lambtha
+
+            if done:
                 break
 
-        G = 0
-        visited = set()
+            state = next_state
+            action = next_action
 
-        for state, reward in reversed(episode):
-            G = reward + gamma * G
+        epsilon = min_epsilon + (init_epsilon - min_epsilon) * np.exp(
+            -epsilon_decay * episode
+        )
 
-            if state not in visited:
-                V[state] += alpha * (G - V[state])
-                visited.add(state)
-
-    return V
+    return Q
