@@ -1,81 +1,71 @@
 #!/usr/bin/env python3
-"""Convolutional backward propagation"""
+"""
+Module to perform back propagation over a convolutional layer.
+"""
 
 import numpy as np
 
 
 def conv_backward(dZ, A_prev, W, b, padding="same", stride=(1, 1)):
     """
-    Performs backpropagation over a convolutional layer
+    Performs back propagation over a convolutional layer of a neural network.
+
+    Args:
+        dZ: numpy.ndarray of shape (m, h_new, w_new, c_new) containing
+            the partial derivatives with respect to the unactivated output
+            of the convolutional layer
+        A_prev: numpy.ndarray of shape (m, h_prev, w_prev, c_prev) containing
+                the output of the previous layer
+        W: numpy.ndarray of shape (kh, kw, c_prev, c_new) containing
+           the kernels for the convolution
+        b: numpy.ndarray of shape (1, 1, 1, c_new) containing
+           the biases applied to the convolution
+        padding: string that is either "same" or "valid"
+        stride: tuple of (sh, sw) containing the strides for the convolution
+
+    Returns:
+        tuple: (dA_prev, dW, db)
+               dA_prev: partial derivatives wrt previous layer
+               dW: partial derivatives wrt kernels
+               db: partial derivatives wrt biases
     """
+    m, h_new, w_new, c_new = dZ.shape
     m, h_prev, w_prev, c_prev = A_prev.shape
-    kh, kw, _, c_new = W.shape
+    kh, kw, _, _ = W.shape
     sh, sw = stride
-    _, h_new, w_new, _ = dZ.shape
 
-    # --------------------
-    # Padding (FIXED)
-    # --------------------
     if padding == "same":
-        ph = ((h_prev - 1) * sh + kh - h_prev) // 2
-        pw = ((w_prev - 1) * sw + kw - w_prev) // 2
-    else:
-        ph, pw = 0, 0
+        ph = int(np.ceil(((h_prev - 1) * sh + kh - h_prev) / 2))
+        pw = int(np.ceil(((w_prev - 1) * sw + kw - w_prev) / 2))
+    elif padding == "valid":
+        ph = 0
+        pw = 0
 
-    A_prev_pad = np.pad(
+    A_pad = np.pad(
         A_prev,
-        ((0, 0), (ph, ph), (pw, pw), (0, 0)),
-        mode="constant"
+        pad_width=((0, 0), (ph, ph), (pw, pw), (0, 0)),
+        mode='constant'
     )
-
-    dA_prev_pad = np.zeros_like(A_prev_pad)
+    dA_pad = np.zeros_like(A_pad)
     dW = np.zeros_like(W)
-    db = np.zeros_like(b)
+    db = np.sum(dZ, axis=(0, 1, 2), keepdims=True)
 
-    # --------------------
-    # Backprop
-    # --------------------
     for i in range(h_new):
         for j in range(w_new):
-
-            row = i * sh
-            col = j * sw
-
             for k in range(c_new):
+                v_start = i * sh
+                v_end = v_start + kh
+                h_start = j * sw
+                h_end = h_start + kw
 
-                # (m,)
-                dz = dZ[:, i, j, k]
+                dz = dZ[:, i:i + 1, j:j + 1, k:k + 1]
+                a_slice = A_pad[:, v_start:v_end, h_start:h_end, :]
 
-                for n in range(m):
+                dA_pad[:, v_start:v_end, h_start:h_end, :] += (
+                    W[:, :, :, k] * dz
+                )
+                dW[:, :, :, k] += np.sum(a_slice * dz, axis=0)
 
-                    # slice from input
-                    a_slice = A_prev_pad[n,
-                                         row:row + kh,
-                                         col:col + kw,
-                                         :]
-
-                    # --------------------
-                    # dA_prev
-                    # --------------------
-                    dA_prev_pad[n,
-                                row:row + kh,
-                                col:col + kw,
-                                :] += W[:, :, :, k] * dz[n]
-
-                    # --------------------
-                    # dW
-                    # --------------------
-                    dW[:, :, :, k] += a_slice * dz[n]
-
-                    # --------------------
-                    # db
-                    # --------------------
-                    db[:, :, :, k] += dz[n]
-
-    # Remove padding
-    if ph != 0 or pw != 0:
-        dA_prev = dA_prev_pad[:, ph:-ph, pw:-pw, :]
-    else:
-        dA_prev = dA_prev_pad
+    dA_prev = dA_pad[:, ph:ph + h_prev, pw:pw + w_prev, :]
 
     return dA_prev, dW, db
