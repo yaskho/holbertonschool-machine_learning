@@ -18,7 +18,7 @@ def expectation(X, pi, m, S):
 
     Returns:
         g: numpy.ndarray of shape (k, n) containing posterior probabilities
-        l: total log likelihood
+        log_l: total log likelihood
         or None, None on failure
     """
     if not isinstance(X, np.ndarray) or len(X.shape) != 2:
@@ -48,6 +48,6 @@ def expectation(X, pi, m, S):
 
     total_likelihood = np.sum(likelihoods, axis=0)
     g = likelihoods / total_likelihood
-    l = np.sum(np.log(total_likelihood))
+    log_l = np.sum(np.log(total_likelihood))
 
-    return g, l
+    return g, log_l
