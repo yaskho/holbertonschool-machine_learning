@@ -1,48 +1,53 @@
 #!/usr/bin/env python3
 """
-Expectation step for GMM (E-step)
+Contains the expectation function for a Gaussian Mixture Model
 """
-
 import numpy as np
 pdf = __import__('5-pdf').pdf
 
 
 def expectation(X, pi, m, S):
     """
-    Performs expectation step of EM algorithm.
+    Calculates the expectation step in the EM algorithm for a GMM
+
+    Args:
+        X: numpy.ndarray of shape (n, d) containing the data set
+        pi: numpy.ndarray of shape (k,) containing priors for each cluster
+        m: numpy.ndarray of shape (k, d) containing centroid means
+        S: numpy.ndarray of shape (k, d, d) containing covariance matrices
 
     Returns:
-        g: (k, n) responsibilities
-        l: log likelihood
+        g: numpy.ndarray of shape (k, n) containing posterior probabilities
+        l: total log likelihood
+        or None, None on failure
     """
-    try:
-        if not isinstance(X, np.ndarray) or len(X.shape) != 2:
-            return None, None
-        if not isinstance(pi, np.ndarray) or not isinstance(m, np.ndarray):
-            return None, None
-        if not isinstance(S, np.ndarray):
-            return None, None
-
-        n, d = X.shape
-        k = pi.shape[0]
-
-        # compute P(k, n)
-        P = np.zeros((k, n))
-
-        # ONLY LOOP ALLOWED
-        for i in range(k):
-            P[i] = pdf(X, m[i], S[i]) * pi[i]
-
-        # total probability per point
-        norm = np.sum(P, axis=0)
-
-        # responsibilities
-        g = P / norm
-
-        # log likelihood
-        l = np.sum(np.log(norm))
-
-        return g, l
-
-    except Exception:
+    if not isinstance(X, np.ndarray) or len(X.shape) != 2:
         return None, None
+    if not isinstance(pi, np.ndarray) or len(pi.shape) != 1:
+        return None, None
+    if not isinstance(m, np.ndarray) or len(m.shape) != 2:
+        return None, None
+    if not isinstance(S, np.ndarray) or len(S.shape) != 3:
+        return None, None
+
+    n, d = X.shape
+    k = pi.shape[0]
+
+    if m.shape != (k, d) or S.shape != (k, d, d):
+        return None, None
+    if not np.isclose(np.sum(pi), 1):
+        return None, None
+
+    likelihoods = np.zeros((k, n))
+
+    for i in range(k):
+        P = pdf(X, m[i], S[i])
+        if P is None:
+            return None, None
+        likelihoods[i] = pi[i] * P
+
+    total_likelihood = np.sum(likelihoods, axis=0)
+    g = likelihoods / total_likelihood
+    l = np.sum(np.log(total_likelihood))
+
+    return g, l
