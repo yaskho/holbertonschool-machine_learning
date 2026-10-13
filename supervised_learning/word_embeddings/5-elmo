@@ -1,0 +1,2 @@
+echo "B" > 5-elmo
+cat 5-elmo
