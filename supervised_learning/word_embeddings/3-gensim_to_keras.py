@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Module that converts a gensim word2vec model to a keras Embedding layer"""
-import tensorflow.keras as keras
+import tensorflow as tf
 
 
 def gensim_to_keras(model):
@@ -14,9 +14,9 @@ def gensim_to_keras(model):
     weights = model.wv.vectors
     vocab_size, vector_size = weights.shape
 
-    layer = keras.layers.Embedding(input_dim=vocab_size,
-                                   output_dim=vector_size,
-                                   weights=[weights],
-                                   trainable=True)
+    layer = tf.keras.layers.Embedding(input_dim=vocab_size,
+                                      output_dim=vector_size,
+                                      weights=[weights],
+                                      trainable=True)
 
     return layer
