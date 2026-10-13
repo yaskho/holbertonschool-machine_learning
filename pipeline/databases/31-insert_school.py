@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Module that contains a function to insert a document into a MongoDB collection."""
 
 
