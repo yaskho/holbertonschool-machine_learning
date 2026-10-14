@@ -22,11 +22,14 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
                 break
 
         G = 0
-        visited = set()
+        returns = []
 
         for state, reward in reversed(episode):
             G = reward + gamma * G
+            returns.append((state, G))
 
+        visited = set()
+        for state, G in reversed(returns):
             if state not in visited:
                 V[state] += alpha * (G - V[state])
                 visited.add(state)
