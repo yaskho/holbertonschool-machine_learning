@@ -1,0 +1,42 @@
+
+#!/usr/bin/env python3
+"""Monte Carlo algorithm for state-value estimation."""
+
+import numpy as np
+
+
+def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
+                alpha=0.1, gamma=0.99):
+    """Perform Monte Carlo prediction to update the value estimate."""
+    for _ in range(episodes):
+        state, _ = env.reset()
+        episode = []
+
+        for _ in range(max_steps):
+            action = policy(state)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            episode.append((state, reward))
+            state = next_state
+
+            if terminated or truncated:
+                break
+
+        G = 0
+        returns = []
+
+        for state, reward in reversed(episode):
+            G = reward + gamma * G
+            returns.append((state, G))
+
+        returns.reverse()
+
+        for t, (state, G) in enumerate(returns):
+            first_visit = all(
+                previous_state != state
+                for previous_state, _ in episode[:t]
+            )
+
+            if first_visit and G > 0:
+                V[state] += alpha * (G - V[state])
+
+    return V
