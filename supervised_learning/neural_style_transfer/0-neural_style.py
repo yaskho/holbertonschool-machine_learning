@@ -65,12 +65,12 @@ class NST:
             )
 
         h, w, _ = image.shape
-        if h > w:
-            h_new = 512
-            w_new = int(w * 512 / h)
-        else:
+        if w > h:
             w_new = 512
             h_new = int(h * 512 / w)
+        else:
+            h_new = 512
+            w_new = int(w * 512 / h)
 
         image_tf = tf.convert_to_tensor(image, dtype=tf.float32)
         resized = tf.image.resize(
