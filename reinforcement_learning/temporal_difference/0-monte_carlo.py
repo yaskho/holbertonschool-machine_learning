@@ -21,12 +21,9 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
             if terminated or truncated:
                 break
 
-        if not any(reward > 0 for _, reward in episode):
-            continue
-
         G = 0
         for state, reward in reversed(episode):
             G = reward + gamma * G
-            V[state] += alpha * (G - V[state])
+            V[state] = V[state] + alpha * (G - V[state])
 
     return V
