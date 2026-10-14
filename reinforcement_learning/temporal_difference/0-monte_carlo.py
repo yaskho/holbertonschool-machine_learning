@@ -1,7 +1,3 @@
-Here is the complete implementation for Task 0: Monte Carlo prediction algorithm, adhering to all style, documentation, and technical requirements for Python 3.9, NumPy 1.25.2, and Gymnasium 0.29.1.
-
-File: 0-monte_carlo.py
-Python
 #!/usr/bin/env python3
 """
 Monte Carlo Algorithm module for Reinforcement Learning.
@@ -10,8 +6,8 @@ Monte Carlo Algorithm module for Reinforcement Learning.
 import numpy as np
 
 
-def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1,
-                gamma=0.99):
+def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
+                alpha=0.1, gamma=0.99):
     """
     Performs the Monte Carlo algorithm for policy evaluation.
 
@@ -28,12 +24,24 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1,
     - V: the updated value estimate numpy.ndarray
     """
     for _ in range(episodes):
-        state, _ = env.reset()
+        reset_res = env.reset()
+        if isinstance(reset_res, tuple):
+            state = reset_res[0]
+        else:
+            state = reset_res
+
         episode = []
 
         for _ in range(max_steps):
             action = policy(state)
-            next_state, reward, terminated, truncated, _ = env.step(action)
+            step_res = env.step(action)
+            if len(step_res) == 5:
+                next_state, reward, terminated, truncated, _ = step_res
+            else:
+                next_state, reward, done, _ = step_res
+                terminated = done
+                truncated = False
+
             episode.append((state, reward))
             state = next_state
             if terminated or truncated:
@@ -49,11 +57,8 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1,
             g = gamma * g + rewards_in_ep[t]
             returns[t] = g
 
-        seen = set()
         for t in range(T):
             s = states_in_ep[t]
-            if s not in seen:
-                seen.add(s)
-                V[s] += alpha * (returns[t] - V[s])
+            V[s] += alpha * (returns[t] - V[s])
 
     return V
