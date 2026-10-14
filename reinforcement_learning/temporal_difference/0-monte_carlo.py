@@ -1,55 +1,30 @@
+
 #!/usr/bin/env python3
-"""
-Monte Carlo Algorithm module for Reinforcement Learning.
-"""
+"""Monte Carlo algorithm for state-value estimation."""
 
 import numpy as np
 
 
 def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
                 alpha=0.1, gamma=0.99):
-    """
-    Performs the Monte Carlo algorithm for policy evaluation.
-
-    Parameters:
-    - env: environment instance
-    - V: numpy.ndarray of shape (s,) containing the value estimate
-    - policy: a function that takes in a state and returns the next action
-    - episodes: total number of episodes to train over (default 5000)
-    - max_steps: maximum number of steps per episode (default 100)
-    - alpha: learning rate (default 0.1)
-    - gamma: discount rate (default 0.99)
-
-    Returns:
-    - V: the updated value estimate numpy.ndarray
-    """
+    """Perform Monte Carlo prediction to update the value estimate."""
     for _ in range(episodes):
-        reset_res = env.reset()
-        state = reset_res[0] if isinstance(reset_res, tuple) else reset_res
-
+        state, _ = env.reset()
         episode = []
 
         for _ in range(max_steps):
             action = policy(state)
-            step_res = env.step(action)
-            if len(step_res) == 5:
-                next_state, reward, terminated, truncated, _ = step_res
-            else:
-                next_state, reward, done, _ = step_res
-                terminated, truncated = done, False
+            next_state, reward, terminated, truncated, _ = env.step(action)
 
             episode.append((state, reward))
             state = next_state
+
             if terminated or truncated:
                 break
 
-        visited = set()
         G = 0
-        for t in range(len(episode) - 1, -1, -1):
-            state, reward = episode[t]
-            G = gamma * G + reward
-            if state not in visited:
-                visited.add(state)
-                V[state] += alpha * (G - V[state])
+        for state, reward in reversed(episode):
+            G = reward + gamma * G
+            V[state] = V[state] + alpha * (G - V[state])
 
     return V
