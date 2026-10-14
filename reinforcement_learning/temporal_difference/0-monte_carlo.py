@@ -43,21 +43,20 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
             if terminated or truncated:
                 break
 
+        # First-visit Monte Carlo or standard policy evaluation
         states_in_ep = [x[0] for x in episode]
         rewards_in_ep = [x[1] for x in episode]
 
         T = len(episode)
-        returns = [0] * T
-        g = 0
-        for t in range(T - 1, -1, -1):
-            g = gamma * g + rewards_in_ep[t]
-            returns[t] = g
+        G = 0
+        visited_states = set()
 
-        seen = set()
-        for t in range(T):
+        for t in range(T - 1, -1, -1):
+            G = gamma * G + rewards_in_ep[t]
             s = states_in_ep[t]
-            if s not in seen:
-                seen.add(s)
-                V[s] += alpha * (returns[t] - V[s])
+            if s not in visited_states:
+                visited_states.add(s)
+                # Incremental update rule
+                V[s] += alpha * (G - V[s])
 
     return V
