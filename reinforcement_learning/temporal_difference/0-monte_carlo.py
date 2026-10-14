@@ -25,10 +25,7 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
     """
     for _ in range(episodes):
         reset_res = env.reset()
-        if isinstance(reset_res, tuple):
-            state = reset_res[0]
-        else:
-            state = reset_res
+        state = reset_res[0] if isinstance(reset_res, tuple) else reset_res
 
         episode = []
 
@@ -39,8 +36,7 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
                 next_state, reward, terminated, truncated, _ = step_res
             else:
                 next_state, reward, done, _ = step_res
-                terminated = done
-                truncated = False
+                terminated, truncated = done, False
 
             episode.append((state, reward))
             state = next_state
@@ -57,8 +53,11 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
             g = gamma * g + rewards_in_ep[t]
             returns[t] = g
 
+        seen = set()
         for t in range(T):
             s = states_in_ep[t]
-            V[s] += alpha * (returns[t] - V[s])
+            if s not in seen:
+                seen.add(s)
+                V[s] += alpha * (returns[t] - V[s])
 
     return V
