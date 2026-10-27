@@ -20,32 +20,28 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
     Returns:
         V: updated value estimate
     """
-    n_states = V.shape[0]
-
-    for episode in range(episodes):
+    for _ in range(episodes):
         state, _ = env.reset()
-        episode_data = []
+        states = []
+        rewards = []
 
-        for step in range(max_steps):
+        for _ in range(max_steps):
             action = policy(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
-            episode_data.append((state, reward))
+            states.append(state)
+            rewards.append(reward)
 
             if terminated or truncated:
                 break
 
             state = next_state
 
-        episode_data = np.array(episode_data, dtype=object)
         G = 0
-        visited_states = set()
+        for t in range(len(states) - 1, -1, -1):
+            G = gamma * G + rewards[t]
 
-        for state, reward in reversed(episode_data):
-            G = gamma * G + reward
-
-            # First-visit Monte Carlo update
-            if state not in visited_states:
-                visited_states.add(state)
-                V[state] = V[state] + alpha * (G - V[state])
+            # First-visit Monte Carlo update condition
+            if states[t] not in states[:t]:
+                V[states[t]] = V[states[t]] + alpha * (G - V[states[t]])
 
     return V
