@@ -21,17 +21,26 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
         V: updated value estimate
     """
     for _ in range(episodes):
-        state, _ = env.reset()
+        res = env.reset()
+        state = res[0] if isinstance(res, tuple) else res
+
         states = []
         rewards = []
 
         for _ in range(max_steps):
             action = policy(state)
-            next_state, reward, terminated, truncated, _ = env.step(action)
+            step_res = env.step(action)
+
+            if len(step_res) == 5:
+                next_state, reward, terminated, truncated, _ = step_res
+                done = terminated or truncated
+            else:
+                next_state, reward, done, _ = step_res
+
             states.append(state)
             rewards.append(reward)
 
-            if terminated or truncated:
+            if done:
                 break
 
             state = next_state
@@ -40,7 +49,7 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100,
         for t in range(len(states) - 1, -1, -1):
             G = gamma * G + rewards[t]
 
-            # First-visit Monte Carlo update condition
+            # First-visit condition: state[t] must not appear before index t
             if states[t] not in states[:t]:
                 V[states[t]] = V[states[t]] + alpha * (G - V[states[t]])
 
