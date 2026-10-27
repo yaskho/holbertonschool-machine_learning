@@ -53,7 +53,8 @@ def sarsa_lambtha(env, Q, lambtha, episodes=5000, max_steps=100,
             next_action = epsilon_greedy(next_state, epsilon)
 
             # TD Error computation for SARSA
-            delta = reward + gamma * Q[next_state, next_action] - Q[state, action]
+            delta = (reward + gamma * Q[next_state, next_action]
+                     - Q[state, action])
 
             # Update eligibility trace
             E[state, action] += 1
