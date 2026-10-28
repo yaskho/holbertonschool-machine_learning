@@ -15,8 +15,8 @@ class NST:
         Constructor for NST class
 
         Args:
-            style_image: numpy.ndarray, the image used as a style reference
-            content_image: numpy.ndarray, the image used as a content reference
+            style_image: numpy.ndarray, style reference image
+            content_image: numpy.ndarray, content reference image
             alpha: weight for content cost
             beta: weight for style cost
         """
@@ -80,7 +80,8 @@ class NST:
 
     def load_model(self):
         """
-        Creates the model used to calculate cost using VGG19 as a base.
+        Creates the model used to calculate cost using VGG19 as a base
+        where MaxPooling2D layers are replaced by AveragePooling2D layers.
 
         Returns:
             The Keras model with outputs from style_layers and content_layer.
@@ -90,13 +91,25 @@ class NST:
             weights='imagenet'
         )
 
-        # Extract output tensors for style layers followed by content layer
+        # Substitute MaxPooling2D with AveragePooling2D
+        custom_vgg = tf.keras.Sequential()
+        for layer in vgg.layers:
+            if isinstance(layer, tf.keras.layers.MaxPooling2D):
+                custom_vgg.add(tf.keras.layers.AveragePooling2D(
+                    pool_size=layer.pool_size,
+                    strides=layer.strides,
+                    padding=layer.padding,
+                    name=layer.name
+                ))
+            else:
+                custom_vgg.add(layer)
+
         outputs = [
-            vgg.get_layer(layer).output
+            custom_vgg.get_layer(layer).output
             for layer in self.style_layers + [self.content_layer]
         ]
 
-        model = tf.keras.Model(inputs=vgg.input, outputs=outputs)
+        model = tf.keras.Model(inputs=custom_vgg.input, outputs=outputs)
         model.trainable = False
 
         return model
