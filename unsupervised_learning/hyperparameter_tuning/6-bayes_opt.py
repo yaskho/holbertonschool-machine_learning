@@ -89,7 +89,7 @@ def build_and_train_model(bounds_vector):
     history = model.fit(
         X_train, Y_train,
         validation_data=(X_val, Y_val),
-        epochs=15,
+        epochs=5,
         batch_size=batch_size,
         callbacks=callbacks,
         verbose=0
