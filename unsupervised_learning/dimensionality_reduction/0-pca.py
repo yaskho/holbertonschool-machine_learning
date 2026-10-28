@@ -17,6 +17,6 @@ def pca(X, var=0.95):
         dimensionality of the transformed X
     """
     _, s, vh = np.linalg.svd(X)
-    ratio = np.cumsum(s ** 2) / np.sum(s ** 2)
+    ratio = np.cumsum(s) / np.sum(s)
     nd = np.searchsorted(ratio, var) + 1
     return vh.T[:, :nd]
