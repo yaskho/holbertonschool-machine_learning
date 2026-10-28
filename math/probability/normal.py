@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
-"""Normal distribution module."""
+"""Normal distribution"""
 
 
 class Normal:
-    """Represents a normal distribution."""
+    """Represents a normal distribution"""
+
+    pi = 3.1415926536
+    e = 2.7182818285
 
     def __init__(self, data=None, mean=0., stddev=1.):
-        """Initialize Normal distribution."""
+        """Class constructor
+
+        data: list of the data used to estimate the distribution
+        mean: mean of the distribution, used if data is None
+        stddev: standard deviation of the distribution, used if data is
+            None
+        """
         if data is None:
             if stddev <= 0:
                 raise ValueError("stddev must be a positive value")
@@ -17,56 +26,32 @@ class Normal:
                 raise TypeError("data must be a list")
             if len(data) < 2:
                 raise ValueError("data must contain multiple values")
-
-            self.mean = sum(data) / len(data)
-
-            variance = 0
-            for x in data:
-                variance += (x - self.mean) ** 2
-            variance /= len(data)
-
-            self.stddev = variance ** 0.5
+            n = len(data)
+            self.mean = float(sum(data) / n)
+            variance = sum((x - self.mean) ** 2 for x in data) / n
+            self.stddev = float(variance ** 0.5)
 
     def z_score(self, x):
-        """Compute z-score."""
+        """Calculates the z-score of a given x-value"""
         return (x - self.mean) / self.stddev
 
     def x_value(self, z):
-        """Compute x from z-score."""
-        return (z * self.stddev) + self.mean
+        """Calculates the x-value of a given z-score"""
+        return z * self.stddev + self.mean
 
     def pdf(self, x):
-        """Normal PDF."""
-        x = float(x)
-        pi = 3.1415926536
-        e = 2.7182818285
-
+        """Calculates the value of the PDF for a given x-value"""
+        coef = 1 / (self.stddev * (2 * self.pi) ** 0.5)
         exponent = -0.5 * ((x - self.mean) / self.stddev) ** 2
-
-        return (1 / (self.stddev * (2 * pi) ** 0.5)) * (e ** exponent)
+        return coef * self.e ** exponent
 
     def cdf(self, x):
-        """Normal CDF using erf approximation."""
-        x = float(x)
+        """Calculates the value of the CDF for a given x-value
 
-        pi = 3.1415926536
-        e = 2.7182818285
-
-        z = (x - self.mean) / (self.stddev * (2 ** 0.5))
-
-        # Abramowitz and Stegun approximation of erf
-        sign = 1
-        if z < 0:
-            sign = -1
-            z = -z
-
-        t = 1 / (1 + 0.3275911 * z)
-
-        erf = 1 - (((((1.061405429 * t - 1.453152027) * t)
-                     + 1.421413741) * t
-                     - 0.284496736) * t
-                     + 0.254829592) * t * (e ** (-z * z))
-
-        erf *= sign
-
+        x: the x-value
+        Returns: the CDF value for x
+        """
+        z = (x - self.mean) / (self.stddev * 2 ** 0.5)
+        erf = (2 / self.pi ** 0.5) * (z - z ** 3 / 3 + z ** 5 / 10 -
+                                      z ** 7 / 42 + z ** 9 / 216)
         return 0.5 * (1 + erf)
