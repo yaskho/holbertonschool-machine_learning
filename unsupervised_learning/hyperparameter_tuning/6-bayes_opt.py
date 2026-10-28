@@ -1,84 +1,88 @@
-Here is the complete implementation for 6-bayes_opt.py, followed by a complete blog post draft ready to publish on Medium or LinkedIn.
-
-Python Script (6-bayes_opt.py)
-Python
 #!/usr/bin/env python3
-"""
-Bayesian Optimization with GPyOpt
-"""
+"""Module for performing Bayesian Optimization using GPyOpt."""
 import GPyOpt
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import callbacks, layers, models, regularizers
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 
 def load_data():
     """
-    Loads and preprocesses the MNIST dataset
+    Loads and preprocesses the MNIST dataset for training and validation.
 
     Returns:
-        X_train, Y_train, X_val, Y_val preprocessed data arrays
+        tuple: (X_train, Y_train), (X_val, Y_val)
     """
-    (x_train, y_train), (x_val, y_val) = tf.keras.datasets.mnist.load_data()
-    x_train = x_train.reshape(-1, 784).astype('float32') / 255.0
-    x_val = x_val.reshape(-1, 784).astype('float32') / 255.0
-    y_train = tf.keras.utils.to_categorical(y_train, 10)
-    y_val = tf.keras.utils.to_categorical(y_val, 10)
-    return x_train, y_train, x_val, y_val
+    (X_train, Y_train), (X_val, Y_val) = tf.keras.datasets.mnist.load_data()
+    X_train = X_train.reshape(-1, 784).astype('float32') / 255.0
+    X_val = X_val.reshape(-1, 784).astype('float32') / 255.0
+    Y_train = tf.keras.utils.to_categorical(Y_train, 10)
+    Y_val = tf.keras.utils.to_categorical(Y_val, 10)
+    return (X_train, Y_train), (X_val, Y_val)
 
 
-X_train, Y_train, X_val, Y_val = load_data()
+# Global dataset variables
+(X_train, Y_train), (X_val, Y_val) = load_data()
 
 
-def build_and_train_model(x_sample):
+def build_and_train_model(bounds_vector):
     """
-    Builds, trains, and evaluates a neural network based on hyperparameters
+    Objective function for GPyOpt. Builds, trains, and evaluates model.
 
-    Parameters:
-        x_sample: 2D numpy array of hyperparameter values [1, 5]
+    Args:
+        bounds_vector (numpy.ndarray): 2D array of shape (1, 5) containing:
+            - learning_rate: float
+            - num_units: float (cast to int)
+            - dropout_rate: float
+            - l2_reg: float
+            - batch_size: float (cast to int power of 2)
 
     Returns:
-        Validation loss (float) as the objective value to minimize
+        float: Loss value to be minimized (1 - validation accuracy).
     """
-    lr = float(x_sample[0, 0])
-    num_units = int(x_sample[0, 1])
-    dropout_rate = float(x_sample[0, 2])
-    l2_reg = float(x_sample[0, 3])
-    batch_size = int(x_sample[0, 4])
+    learning_rate = float(bounds_vector[0, 0])
+    num_units = int(bounds_vector[0, 1])
+    dropout_rate = float(bounds_vector[0, 2])
+    l2_reg = float(bounds_vector[0, 3])
+    batch_size = int(bounds_vector[0, 4])
 
-    model = models.Sequential([
-        layers.Dense(
+    # Construct model
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(
             num_units,
             activation='relu',
-            kernel_regularizer=regularizers.l2(l2_reg),
-            input_shape=(784,)
+            input_shape=(784,),
+            kernel_regularizer=tf.keras.regularizers.l2(l2_reg)
         ),
-        layers.Dropout(dropout_rate),
-        layers.Dense(10, activation='softmax')
+        tf.keras.layers.Dropout(dropout_rate),
+        tf.keras.layers.Dense(10, activation='softmax')
     ])
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     model.compile(
         optimizer=optimizer,
         loss='categorical_crossentropy',
         metrics=['accuracy']
     )
 
-    chkpt_filename = (
-        f"chkpt_lr{lr:.4f}_units{num_units}_"
-        f"drop{dropout_rate:.2f}_l2{l2_reg:.5f}_bs{batch_size}.h5"
+    # Checkpoint filename encoding hyperparameter configuration
+    chkpt_name = (
+        f"ckpt_lr{learning_rate:.4f}_units{num_units}_"
+        f"drop{dropout_rate:.2f}_l2{l2_reg:.4f}_bs{batch_size}.h5"
     )
 
-    cb_list = [
-        callbacks.EarlyStopping(
+    # Callbacks: Early Stopping & Best Checkpoint Saver
+    callbacks = [
+        EarlyStopping(
             monitor='val_loss',
             patience=3,
             restore_best_weights=True
         ),
-        callbacks.ModelCheckpoint(
-            filepath=chkpt_filename,
-            monitor='val_loss',
-            save_best_only=True
+        ModelCheckpoint(
+            filepath=chkpt_name,
+            monitor='val_accuracy',
+            save_best_only=True,
+            verbose=0
         )
     ]
 
@@ -87,58 +91,54 @@ def build_and_train_model(x_sample):
         validation_data=(X_val, Y_val),
         epochs=15,
         batch_size=batch_size,
-        callbacks=cb_list,
+        callbacks=callbacks,
         verbose=0
     )
 
-    val_loss = float(min(history.history['val_loss']))
-    return val_loss
+    # Return satisficing objective metric to minimize (1 - best val_accuracy)
+    best_val_acc = max(history.history['val_accuracy'])
+    return 1.0 - best_val_acc
 
 
-def optimize_hyperparameters():
+def optimize_model():
     """
-    Performs Bayesian Optimization using GPyOpt on 5 hyperparameters
+    Configures and runs Bayesian Optimization using GPyOpt across 5 params.
     """
-    domain = [
-        {'name': 'learning_rate', 'type': 'continuous',
-         'domain': (0.0001, 0.01)},
-        {'name': 'num_units', 'type': 'discrete',
-         'domain': (32, 64, 128, 256)},
-        {'name': 'dropout_rate', 'type': 'continuous',
-         'domain': (0.1, 0.5)},
-        {'name': 'l2_reg', 'type': 'continuous',
-         'domain': (0.00001, 0.001)},
-        {'name': 'batch_size', 'type': 'discrete',
-         'domain': (32, 64, 128)}
+    # Define hyperparameter search domain
+    bounds = [
+        {'name': 'learning_rate', 'type': 'continuous', 'domain': (1e-4, 1e-2)},
+        {'name': 'num_units', 'type': 'discrete', 'domain': (32, 64, 128, 256)},
+        {'name': 'dropout_rate', 'type': 'continuous', 'domain': (0.1, 0.5)},
+        {'name': 'l2_reg', 'type': 'continuous', 'domain': (1e-5, 1e-2)},
+        {'name': 'batch_size', 'type': 'discrete', 'domain': (32, 64, 128)}
     ]
 
+    # Initialize GPyOpt Bayesian Optimizer
     optimizer = GPyOpt.methods.BayesianOptimization(
         f=build_and_train_model,
-        domain=domain,
+        domain=bounds,
         acquisition_type='EI',
         exact_feval=True
     )
 
+    # Run optimization for maximum 30 iterations
     optimizer.run_optimization(max_iter=30)
-    optimizer.plot_convergence('bayes_opt_convergence.png')
 
-    best_x = optimizer.x_opt
-    best_fx = optimizer.fx_opt
+    # Plot convergence
+    optimizer.plot_convergence(filename='convergence_plot.png')
 
-    report = (
-        "Bayesian Optimization Report\n"
-        "============================\n"
-        f"Best Validation Loss: {best_fx:.5f}\n"
-        f"Optimal Learning Rate: {best_x[0]:.6f}\n"
-        f"Optimal Number of Units: {int(best_x[1])}\n"
-        f"Optimal Dropout Rate: {best_x[2]:.4f}\n"
-        f"Optimal L2 Regularization Weight: {best_x[3]:.6f}\n"
-        f"Optimal Batch Size: {int(best_x[4])}\n"
-    )
-
+    # Save summary report to 'bayes_opt.txt'
     with open('bayes_opt.txt', 'w') as f:
-        f.write(report)
+        f.write("--- Bayesian Optimization Report ---\n")
+        f.write(f"Optimized Hyperparameters (x_opt):\n")
+        f.write(f"  Learning Rate: {optimizer.x_opt[0]:.6f}\n")
+        f.write(f"  Number of Units: {int(optimizer.x_opt[1])}\n")
+        f.write(f"  Dropout Rate: {optimizer.x_opt[2]:.4f}\n")
+        f.write(f"  L2 Regularization Weight: {optimizer.x_opt[3]:.6f}\n")
+        f.write(f"  Batch Size: {int(optimizer.x_opt[4])}\n\n")
+        f.write(f"Best Satisficing Loss (1 - val_acc): {optimizer.fx_opt:.6f}\n")
+        f.write(f"Best Validation Accuracy: {(1.0 - optimizer.fx_opt):.4%}\n")
 
 
 if __name__ == '__main__':
-    optimize_hyperparameters()
+    optimize_model()
