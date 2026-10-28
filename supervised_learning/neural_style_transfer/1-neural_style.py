@@ -7,7 +7,7 @@ import tensorflow as tf
 
 
 class NST:
-    """Performs neural style transfer using VGG19."""
+    """Defines a neural style transfer model."""
 
     style_layers = [
         'block1_conv1',
@@ -38,11 +38,15 @@ class NST:
 
         if (not isinstance(alpha, (int, float, np.number))
                 or alpha < 0):
-            raise TypeError("alpha must be a non-negative number")
+            raise TypeError(
+                "alpha must be a non-negative number"
+            )
 
         if (not isinstance(beta, (int, float, np.number))
                 or beta < 0):
-            raise TypeError("beta must be a non-negative number")
+            raise TypeError(
+                "beta must be a non-negative number"
+            )
 
         self.style_image = self.preprocess_image(style_image)
         self.content_image = self.preprocess_image(content_image)
@@ -52,25 +56,29 @@ class NST:
 
     @staticmethod
     def preprocess_image(image):
-        """Preprocess an image for the VGG19 model."""
+        """Preprocess an image for VGG19."""
         image = np.expand_dims(image, axis=0)
         return tf.keras.applications.vgg19.preprocess_input(image)
 
     def load_model(self):
-        """Load the VGG19 model and return the selected layer outputs."""
+        """Load VGG19 and return a model with selected layer outputs."""
         vgg = tf.keras.applications.VGG19(
             include_top=False,
             weights='imagenet'
         )
+
         vgg.trainable = False
 
         outputs = [
-            vgg.get_layer(name).output
-            for name in self.style_layers
+            vgg.get_layer(layer).output
+            for layer in self.style_layers
         ]
         outputs.append(vgg.get_layer(self.content_layer).output)
 
-        model = tf.keras.Model(inputs=vgg.input, outputs=outputs)
+        model = tf.keras.Model(
+            inputs=vgg.input,
+            outputs=outputs
+        )
         model.trainable = False
 
         return model
