@@ -122,6 +122,7 @@ class NST:
         style_outputs = self.model(style_input)
         content_outputs = self.model(content_input)
 
-        self.gram_style_features = [self.gram_matrix(output)
-                                   for output in style_outputs[:-1]]
+        self.gram_style_features = []
+        for output in style_outputs[:-1]:
+            self.gram_style_features.append(self.gram_matrix(output))
         self.content_feature = content_outputs[-1]
