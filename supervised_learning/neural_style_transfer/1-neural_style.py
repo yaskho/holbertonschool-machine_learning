@@ -1,13 +1,12 @@
-
 #!/usr/bin/env python3
-"""Module for neural style transfer using VGG19."""
+"""Neural Style Transfer module."""
 
 import numpy as np
 import tensorflow as tf
 
 
 class NST:
-    """Defines a neural style transfer model."""
+    """Performs Neural Style Transfer."""
 
     style_layers = [
         'block1_conv1',
@@ -21,38 +20,33 @@ class NST:
 
     def __init__(self, style_image, content_image,
                  alpha=1e4, beta=1):
-        """Initialize the neural style transfer instance."""
-        if (not isinstance(style_image, np.ndarray)
-                or style_image.ndim != 3
-                or style_image.shape[2] != 3):
+        """Initialize the NST object."""
+        if (not isinstance(style_image, np.ndarray) or
+                style_image.ndim != 3 or
+                style_image.shape[2] != 3):
             raise TypeError(
                 "style_image must be a numpy.ndarray with shape (h, w, 3)"
             )
 
-        if (not isinstance(content_image, np.ndarray)
-                or content_image.ndim != 3
-                or content_image.shape[2] != 3):
+        if (not isinstance(content_image, np.ndarray) or
+                content_image.ndim != 3 or
+                content_image.shape[2] != 3):
             raise TypeError(
                 "content_image must be a numpy.ndarray with shape (h, w, 3)"
             )
 
-        if (not isinstance(alpha, (int, float, np.number))
-                or alpha < 0):
-            raise TypeError(
-                "alpha must be a non-negative number"
-            )
+        if (not isinstance(alpha, (int, float)) or alpha < 0):
+            raise TypeError("alpha must be a non-negative number")
 
-        if (not isinstance(beta, (int, float, np.number))
-                or beta < 0):
-            raise TypeError(
-                "beta must be a non-negative number"
-            )
+        if (not isinstance(beta, (int, float)) or beta < 0):
+            raise TypeError("beta must be a non-negative number")
 
         self.style_image = self.preprocess_image(style_image)
         self.content_image = self.preprocess_image(content_image)
         self.alpha = alpha
         self.beta = beta
-        self.model = self.load_model()
+        self.model = None
+        self.load_model()
 
     @staticmethod
     def preprocess_image(image):
@@ -61,24 +55,19 @@ class NST:
         return tf.keras.applications.vgg19.preprocess_input(image)
 
     def load_model(self):
-        """Load VGG19 and return a model with selected layer outputs."""
+        """Load the VGG19 model for NST."""
         vgg = tf.keras.applications.VGG19(
             include_top=False,
             weights='imagenet'
         )
-
         vgg.trainable = False
 
-        outputs = [
-            vgg.get_layer(layer).output
-            for layer in self.style_layers
-        ]
+        outputs = [vgg.get_layer(name).output
+                   for name in self.style_layers]
         outputs.append(vgg.get_layer(self.content_layer).output)
 
-        model = tf.keras.Model(
+        self.model = tf.keras.models.Model(
             inputs=vgg.input,
             outputs=outputs
         )
-        model.trainable = False
-
-        return model
+        self.model.trainable = False
