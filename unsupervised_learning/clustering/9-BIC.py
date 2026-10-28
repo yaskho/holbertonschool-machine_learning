@@ -37,7 +37,8 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
     if type(kmax) is not int or kmax <= 0 or kmax > n:
         return None, None, None, None
 
-    if kmin > kmax:
+    # kmax must be strictly greater than kmin to compare BIC values
+    if kmin >= kmax:
         return None, None, None, None
 
     if type(iterations) is not int or iterations <= 0:
