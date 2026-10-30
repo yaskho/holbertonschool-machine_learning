@@ -1,73 +1,83 @@
 #!/usr/bin/env python3
-"""Dataset module for Portuguese to English machine translation."""
-
+"""
+Dataset module for machine translation task
+"""
+import tensorflow as tf
 import transformers
 from setup import load_pt2en
 
 
 class Dataset:
-    """Loads and prepares the Portuguese-English translation dataset."""
+    """
+    Dataset class that loads and prepares Portuguese to English translation
+    datasets using HuggingFace subword tokenizers.
+    """
 
     def __init__(self):
-        """Initialize the training and validation datasets and tokenizers."""
+        """
+        Initializes dataset instances and tokenizers
+        """
         self.data_train = load_pt2en('train')
         self.data_valid = load_pt2en('validation')
-        self.tokenizer_pt, self.tokenizer_en = \
-            self.tokenize_dataset(self.data_train)
+
+        self.tokenizer_pt, self.tokenizer_en = self.tokenize_dataset(
+            self.data_train
+        )
 
     def tokenize_dataset(self, data):
         """
-        Create subword tokenizers for Portuguese and English.
+        Creates sub-word tokenizers for Portuguese and English from dataset
 
         Args:
-            data: tf.data.Dataset containing (pt, en) pairs
+            data: tf.data.Dataset yielding (pt, en) tuple pairs
 
         Returns:
-            The Portuguese and English tokenizers.
+            tokenizer_pt: Portuguese subword tokenizer
+            tokenizer_en: English subword tokenizer
         """
         tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
-            'neuralmind/bert-base-portuguese-cased'
+            'bert-base-uncased'
         )
+        tokenizer_pt = tokenizer_pt.train_new_from_iterator(
+            (pt.numpy().decode('utf-8') for pt, en in data),
+            vocab_size=2**13
+        )
+
         tokenizer_en = transformers.AutoTokenizer.from_pretrained(
             'bert-base-uncased'
         )
-
-        pt_data = data.map(lambda pt, en: pt).as_numpy_iterator()
-        en_data = data.map(lambda pt, en: en).as_numpy_iterator()
-
-        tokenizer_pt = tokenizer_pt.train_new_from_iterator(
-            (pt.decode('utf-8') for pt in pt_data),
-            vocab_size=2 ** 13
-        )
-
         tokenizer_en = tokenizer_en.train_new_from_iterator(
-            (en.decode('utf-8') for en in en_data),
-            vocab_size=2 ** 13
+            (en.numpy().decode('utf-8') for pt, en in data),
+            vocab_size=2**13
         )
 
         return tokenizer_pt, tokenizer_en
 
     def encode(self, pt, en):
         """
-        Encode a Portuguese-English translation pair.
+        Encodes a Portuguese and English translation pair into tokens
 
         Args:
-            pt: tf.Tensor containing the Portuguese sentence.
-            en: tf.Tensor containing the English sentence.
+            pt: tf.Tensor containing the Portuguese sentence
+            en: tf.Tensor containing the corresponding English sentence
 
         Returns:
-            A tuple containing the Portuguese and English token lists.
+            pt_tokens: list containing Portuguese tokens with start/end tokens
+            en_tokens: list containing English tokens with start/end tokens
         """
-        pt = pt.numpy().decode('utf-8')
-        en = en.numpy().decode('utf-8')
+        pt_text = pt.numpy().decode('utf-8')
+        en_text = en.numpy().decode('utf-8')
 
-        pt_tokens = self.tokenizer_pt.encode(pt, add_special_tokens=False)
-        en_tokens = self.tokenizer_en.encode(en, add_special_tokens=False)
+        pt_tokens = (
+            [self.tokenizer_pt.vocab_size]
+            + self.tokenizer_pt.encode(pt_text, add_special_tokens=False)
+            + [self.tokenizer_pt.vocab_size + 1]
+        )
 
-        pt_vocab_size = self.tokenizer_pt.vocab_size
-        en_vocab_size = self.tokenizer_en.vocab_size
-
-        pt_tokens = [pt_vocab_size] + pt_tokens + [pt_vocab_size + 1]
-        en_tokens = [en_vocab_size] + en_tokens + [en_vocab_size + 1]
+        en_tokens = (
+            [self.tokenizer_en.vocab_size]
+            + self.tokenizer_en.encode(en_text, add_special_tokens=False)
+            + [self.tokenizer_en.vocab_size + 1]
+        )
 
         return pt_tokens, en_tokens
